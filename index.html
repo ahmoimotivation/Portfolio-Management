@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPS 崩盘推演器 · 全押 vs 布局</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f2f5f9; --line:#e4e9f0;
+    --ink:#1a2230; --sub:#5b6675; --accent:#0ea5b7;
+    --stock:#3b6fe0; --gold:#c9931a; --prop:#1f9d6b; --cash:#98a2b3;
+    --bad:#e5484d; --good:#12a06a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+       background:var(--bg);color:var(--ink);}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 18px 60px;}
+  h1{font-size:26px;margin:6px 0 2px;letter-spacing:.5px}
+  h1 .badge{font-size:12px;background:var(--accent);color:#04222a;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:8px;font-weight:700}
+  .sub{color:var(--sub);font-size:14px;margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+  .card h2{margin:0 0 12px;font-size:16px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+  .row{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
+  .row label{font-size:15px}
+  .row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
+  input[type=range]{width:100%;accent-color:var(--accent);height:4px}
+  input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+       border-radius:8px;padding:8px 10px;width:140px;font-size:16px;text-align:right}
+  .slabel{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+  .slabel .n{font-weight:700;font-variant-numeric:tabular-nums}
+  .alloc .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+  .sum{font-size:13px;margin-top:6px}
+  .sum.ok{color:var(--good)} .sum.bad{color:var(--bad)}
+  /* result */
+  .results{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:820px){.results{grid-template-columns:1fr}}
+  .res{border-radius:16px;padding:20px;border:1px solid var(--line)}
+  .res.allin{background:#fdf1f2;border-color:#f4ccd0}
+  .res.gps{background:#eefaf4;border-color:#c6ecd8}
+  .res .tag{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--sub)}
+  .res .big{font-size:34px;font-weight:800;margin:6px 0;font-variant-numeric:tabular-nums}
+  .res .dd{font-size:15px;font-weight:700}
+  .dd.neg{color:var(--bad)} .dd.pos{color:var(--good)}
+  .bar{height:12px;background:#eef1f5;border-radius:8px;overflow:hidden;margin:12px 0 4px}
+  .bar > i{display:block;height:100%}
+  .bullets{margin-top:10px;font-size:14px;color:var(--gold)}
+  .verdict{margin-top:18px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+           padding:16px 18px;font-size:16px;line-height:1.6}
+  .verdict b{color:var(--accent)}
+  .phase2{margin-top:20px}
+  details summary{cursor:pointer;color:var(--accent);font-size:15px;font-weight:600;margin:8px 0}
+  .fine{color:var(--sub);font-size:12px;margin-top:26px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--sub);margin:2px 4px 2px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GPS 崩盘推演器 <span class="badge">情景演示</span></h1>
+  <div class="sub">同一场崩盘，<b>全押美股</b> vs <b>GPS 布局</b>（美股 · 黄金 · 房产），结局差多少？拉动下面的数字试试看。
+  <button onclick="resetState()" style="margin-left:8px;background:var(--panel2);color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer">↺ 重置</button>
+  <span style="font-size:12px;color:var(--sub)">（改动会自动保存）</span></div>
+
+  <div class="grid">
+    <!-- 市场情景 -->
+    <div class="card">
+      <h2>① 市场情景（假设）</h2>
+      <div class="row"><label>起始资金 (RM)</label>
+        <input type="number" id="start" value="100000" step="10000" min="0"></div>
+      <div class="slabel"><span>美股崩盘幅度</span><span class="n" id="crashV">-40%</span></div>
+      <input type="range" id="crash" min="-70" max="0" value="-40">
+      <div class="slabel" style="margin-top:14px"><span>黄金涨跌</span><span class="n" id="goldV">+15%</span></div>
+      <input type="range" id="gold" min="-30" max="60" value="15">
+      <div class="slabel" style="margin-top:14px"><span>房产价值变化</span><span class="n" id="propV">0%</span></div>
+      <input type="range" id="prop" min="-30" max="30" value="0">
+      <div style="margin-top:10px;font-size:13px;color:var(--sub)">💡 房产就算价值不动，租金现金流照收 —— 这就是「根基」。</div>
+    </div>
+
+    <!-- GPS 配置 -->
+    <div class="card alloc">
+      <h2>② 你的 GPS 配置</h2>
+      <div class="slabel"><span><span class="dot" style="background:var(--stock)"></span>美股（引擎）</span><span class="n" id="sV">70%</span></div>
+      <input type="range" id="s" min="0" max="100" value="70">
+      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--gold)"></span>黄金（保险/子弹）</span><span class="n" id="gV">15%</span></div>
+      <input type="range" id="g" min="0" max="100" value="15">
+      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--prop)"></span>房产（根基）</span><span class="n" id="pV">10%</span></div>
+      <input type="range" id="p" min="0" max="100" value="10">
+      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--cash)"></span>现金（子弹）</span><span class="n" id="cV">5%</span></div>
+      <input type="range" id="c" min="0" max="100" value="5">
+      <div class="sum" id="sum">合计：100%</div>
+    </div>
+  </div>
+
+  <!-- 平时组合 CAGR -->
+  <div class="card" style="margin-top:18px">
+    <h2>③ 平时（非崩盘）各资产年化回报 CAGR</h2>
+    <div class="grid" style="gap:14px">
+      <div>
+        <div class="slabel"><span><span class="dot" style="background:var(--stock)"></span>美股 CAGR</span><span class="n" id="scagrV">10%</span></div>
+        <input type="range" id="scagr" min="0" max="40" step="0.5" value="10">
+        <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--prop)"></span>房产 CAGR</span><span class="n" id="pcagrV">5%</span></div>
+        <input type="range" id="pcagr" min="0" max="20" step="0.5" value="5">
+      </div>
+      <div>
+        <div class="slabel"><span><span class="dot" style="background:var(--gold)"></span>黄金 CAGR</span><span class="n" id="gcagrV">6%</span></div>
+        <input type="range" id="gcagr" min="0" max="20" step="0.5" value="6">
+        <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--cash)"></span>现金 CAGR</span><span class="n" id="ccagrV">3%</span></div>
+        <input type="range" id="ccagr" min="0" max="20" step="0.5" value="3">
+      </div>
+    </div>
+    <div class="verdict" id="cagrOut" style="margin-top:16px"></div>
+  </div>
+
+  <!-- 结果 -->
+  <div class="results">
+    <div class="res allin">
+      <div class="tag">🗡️ 全押美股（100%）</div>
+      <div class="big" id="allinVal">RM 60,000</div>
+      <div class="dd neg" id="allinDD">崩盘后 −40%</div>
+      <div class="bar"><i id="allinBar" style="background:var(--bad);width:60%"></i></div>
+      <div class="bullets">可动用子弹：RM 0 —— 崩盘时只能干等或割肉 😰</div>
+    </div>
+    <div class="res gps">
+      <div class="tag">🛰️ GPS 布局</div>
+      <div class="big" id="gpsVal">RM 91,500</div>
+      <div class="dd neg" id="gpsDD">崩盘后 −8.5%</div>
+      <div class="bar"><i id="gpsBar" style="background:var(--good);width:91%"></i></div>
+      <div class="bullets" id="gpsBullets">可动用子弹（黄金＋现金）：RM 22,250 —— 别人恐慌，你有钱抄底 😎</div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <!-- Phase 2 反弹 -->
+  <div class="phase2">
+    <details>
+      <summary>▶ 加演：美股涨回崩盘前原点，谁赚更多？（用子弹抄底）</summary>
+      <div class="card" style="margin-top:10px">
+        <div style="font-size:14px;color:var(--sub);margin-bottom:14px">情景：美股慢慢<b style="color:var(--ink)">涨回崩盘前的原点</b>。从 <span id="rbFrom">-40%</span> 涨回原点，需要 <b style="color:var(--accent)" id="rbNeed">+66.7%</b>（这就是为什么崩盘时手上有子弹的人赚更多）。</div>
+        <div class="slabel"><span>GPS：投入多少「子弹」抄底</span><span class="n" id="depV">50%</span></div>
+        <input type="range" id="dep" min="0" max="100" value="50">
+        <div class="results" style="margin-top:16px">
+          <div class="res allin">
+            <div class="tag">🗡️ 全押美股（无子弹，只能持有）</div>
+            <div class="big" id="allinFinal">RM 78,000</div>
+            <div class="dd" id="allinFinalDD"></div>
+          </div>
+          <div class="res gps">
+            <div class="tag">🛰️ GPS（用子弹在低点加仓）</div>
+            <div class="big" id="gpsFinal">RM —</div>
+            <div class="dd" id="gpsFinalDD"></div>
+          </div>
+        </div>
+        <div class="verdict" id="verdict2" style="margin-top:16px"></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="fine">
+    <span class="pill">情景演示</span><span class="pill">假设数字</span><span class="pill">教育用途</span><br>
+    本工具为教育性情景推演，所有数字均为假设输入，<b>不代表任何资产的未来表现、不构成投资建议、不承诺任何回报</b>。
+    历史上崩盘时各资产走势并非固定（例如 2022 年股与金曾同跌）——重点不是「黄金一定涨」，而是「不同资产周期常常错开、可以互相对冲，让你手上永远有子弹」。
+    投资有风险，请按自身情况判断或咨询持牌专业人士。
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const rm = n => 'RM ' + Math.round(n).toLocaleString('en-US');
+  const ids = ['start','crash','gold','prop','s','g','p','c','dep','scagr','gcagr','pcagr','ccagr'];
+  ids.forEach(i => $(i).addEventListener('input', calc));
+
+  const STORE='gps_sim_v1';
+  function saveState(){ try{ const o={}; ids.forEach(i=>o[i]=$(i).value); localStorage.setItem(STORE,JSON.stringify(o)); }catch(e){} }
+  function loadState(){ try{ const s=localStorage.getItem(STORE); if(!s)return; const o=JSON.parse(s); ids.forEach(i=>{ if(o[i]!=null && $(i)) $(i).value=o[i]; }); }catch(e){} }
+  function resetState(){ try{ localStorage.removeItem(STORE); }catch(e){} location.reload(); }
+
+  function calc(){
+    const start = +$('start').value || 0;
+    const crash = +$('crash').value, gold = +$('gold').value, prop = +$('prop').value;
+    let s=+$('s').value, g=+$('g').value, p=+$('p').value, c=+$('c').value;
+    $('crashV').textContent = crash+'%';
+    $('goldV').textContent = (gold>=0?'+':'')+gold+'%';
+    $('propV').textContent = (prop>=0?'+':'')+prop+'%';
+    $('sV').textContent=s+'% · '+rm(start*s/100); $('gV').textContent=g+'% · '+rm(start*g/100);
+    $('pV').textContent=p+'% · '+rm(start*p/100); $('cV').textContent=c+'% · '+rm(start*c/100);
+
+    const total = s+g+p+c;
+    const sumEl = $('sum');
+    sumEl.textContent = '合计：'+total+'%' + (total===100?'　✓':'　（请调到 100%）');
+    sumEl.className = 'sum ' + (total===100?'ok':'bad');
+
+    // 平时（非崩盘）组合 CAGR
+    const scagr=+$('scagr').value,gcagr=+$('gcagr').value,pcagr=+$('pcagr').value,ccagr=+$('ccagr').value;
+    $('scagrV').textContent=scagr+'%'; $('gcagrV').textContent=gcagr+'%';
+    $('pcagrV').textContent=pcagr+'%'; $('ccagrV').textContent=ccagr+'%';
+    const blended=(s*scagr+g*gcagr+p*pcagr+c*ccagr)/100;
+    $('cagrOut').innerHTML='你的 GPS 组合 <b>平时（非崩盘）年化 ≈ '+blended.toFixed(1)+'%</b> —— '+
+      '把这个数字填进 Coast FIRE 计算器的「退休前 CAGR」，就知道你多快到 F U Money。'+
+      (total!==100?'<br><span style="color:var(--bad)">（配置合计要先调到 100% 才准）</span>':'');
+
+    // Phase 1
+    const allin = start*(1+crash/100);
+    const gpsStock = start*s/100*(1+crash/100);
+    const gpsGold  = start*g/100*(1+gold/100);
+    const gpsProp  = start*p/100*(1+prop/100);
+    const gpsCash  = start*c/100;
+    const gps = gpsStock+gpsGold+gpsProp+gpsCash;
+    const bullets = gpsGold+gpsCash;
+
+    const allinDD = start? (allin/start-1)*100 : 0;
+    const gpsDD   = start? (gps/start-1)*100 : 0;
+
+    $('allinVal').textContent = rm(allin);
+    $('gpsVal').textContent   = rm(gps);
+    $('allinDD').textContent  = '崩盘后 '+allinDD.toFixed(1)+'%';
+    $('gpsDD').textContent    = '崩盘后 '+gpsDD.toFixed(1)+'%';
+    $('allinDD').className = 'dd '+(allinDD<0?'neg':'pos');
+    $('gpsDD').className   = 'dd '+(gpsDD<0?'neg':'pos');
+    $('allinBar').style.width = Math.max(0,Math.min(100, start?allin/start*100:0))+'%';
+    $('gpsBar').style.width   = Math.max(0,Math.min(100, start?gps/start*100:0))+'%';
+    $('gpsBullets').textContent = '可动用子弹（黄金＋现金）：'+rm(bullets)+' —— 别人恐慌，你有钱抄底 😎';
+
+    const diff = gps-allin;
+    $('verdict').innerHTML = '同一场崩盘：全押的人剩 <b>'+rm(allin)+'</b>，GPS 的人剩 <b>'+rm(gps)+'</b>——'+
+      '多守住 <b>'+rm(diff)+'</b>，而且手上还有 <b>'+rm(bullets)+'</b> 子弹可以趁低买。<b>差别不是运气，是布局。</b>';
+
+    // Phase 2 — 美股涨回崩盘前原点（不需 user input）
+    const dep = +$('dep').value;
+    $('depV').textContent = dep+'%';
+    const recMult = crash>-100 ? 1/(1+crash/100) : 1;
+    $('rbFrom').textContent = crash+'%';
+    $('rbNeed').textContent = '+'+((recMult-1)*100).toFixed(1)+'%';
+    const allinFinal = allin*recMult;
+    const deployed = bullets*dep/100;
+    const gpsStockAfter = (gpsStock+deployed)*recMult;
+    const gpsFinal = gpsStockAfter + (bullets-deployed) + gpsProp;
+    $('allinFinal').textContent = rm(allinFinal);
+    $('gpsFinal').textContent = rm(gpsFinal);
+    $('allinFinalDD').textContent = '相对起始 '+(start?((allinFinal/start-1)*100).toFixed(1):0)+'%';
+    $('gpsFinalDD').textContent = '相对起始 '+(start?((gpsFinal/start-1)*100).toFixed(1):0)+'%';
+    $('allinFinalDD').className = 'dd '+(allinFinal>=start-0.5?'pos':'neg');
+    $('gpsFinalDD').className = 'dd '+(gpsFinal>=start?'pos':'neg');
+    const d2 = gpsFinal-allinFinal;
+    $('verdict2').innerHTML = '美股涨回原点后：全押只是<b>打平</b>（回到 '+rm(allinFinal)+'），'+
+      'GPS 却变成 <b>'+rm(gpsFinal)+'</b>'+(d2>=0?'，多赚 <b>'+rm(d2)+'</b>——因为你在低点用子弹加了仓。':'。')+
+      ' <b>同样一场崩盘，别人打平，你已经赚钱。</b>';
+    saveState();
+  }
+  loadState(); calc();
+</script>
+</body>
+</html>

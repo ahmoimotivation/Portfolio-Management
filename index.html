@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GPS 崩盘推演器 · 全押 vs 布局</title>
+<title>Portfolio Management 推演器 · 全押 vs 布局</title>
 <style>
   :root{
     --bg:#f5f7fa; --panel:#ffffff; --panel2:#f2f5f9; --line:#e4e9f0;
@@ -64,8 +64,8 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>GPS 崩盘推演器 <span class="badge">情景演示</span></h1>
-  <div class="sub">同一场崩盘，<b>全押美股</b> vs <b>GPS 布局</b>（美股 · 黄金 · 房产），结局差多少？拉动下面的数字试试看。
+  <h1>Portfolio Management 推演器 <span class="badge">情景演示</span></h1>
+  <div class="sub">同一场崩盘，<b>全押美股</b> vs <b>Portfolio Management 布局</b>（美股 · 黄金 · 房产），结局差多少？拉动下面的数字试试看。
   <button onclick="resetState()" style="margin-left:8px;background:var(--panel2);color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer">↺ 重置</button>
   <span style="font-size:12px;color:var(--sub)">（改动会自动保存）</span></div>
 
@@ -84,9 +84,9 @@
       <div style="margin-top:10px;font-size:13px;color:var(--sub)">💡 房产就算价值不动，租金现金流照收 —— 这就是「根基」。</div>
     </div>
 
-    <!-- GPS 配置 -->
+    <!-- Portfolio Management 配置 -->
     <div class="card alloc">
-      <h2>② 你的 GPS 配置</h2>
+      <h2>② 你的 Portfolio Management 配置</h2>
       <p class="hint">拖动滑条，或直接输入百分比（0–100）。</p>
       <div class="slabel"><label for="sInput"><span class="dot" style="background:var(--stock)"></span>美股（引擎）</label><span class="entry"><input type="number" id="sInput" min="0" max="100" step="1" value="70" inputmode="numeric" aria-label="美股配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="sV"></span></span></div>
       <input type="range" id="s" min="0" max="100" value="70" aria-label="美股配置滑条">
@@ -130,7 +130,7 @@
       <div class="bullets">可动用子弹：RM 0 —— 崩盘时只能干等或割肉 😰</div>
     </div>
     <div class="res gps">
-      <div class="tag">🛰️ GPS 布局</div>
+      <div class="tag">🛰️ Portfolio Management 布局</div>
       <div class="big" id="gpsVal">RM 91,500</div>
       <div class="dd neg" id="gpsDD">崩盘后 −8.5%</div>
       <div class="bar"><i id="gpsBar" style="background:var(--good);width:91%"></i></div>
@@ -146,7 +146,7 @@
       <summary>▶ 加演：美股涨回崩盘前原点，谁赚更多？（用子弹抄底）</summary>
       <div class="card" style="margin-top:10px">
         <div style="font-size:14px;color:var(--sub);margin-bottom:14px">情景：美股慢慢<b style="color:var(--ink)">涨回崩盘前的原点</b>。从 <span id="rbFrom">-40%</span> 涨回原点，需要 <b style="color:var(--accent)" id="rbNeed">+66.7%</b>（这就是为什么崩盘时手上有子弹的人赚更多）。</div>
-        <div class="slabel"><span>GPS：投入多少「子弹」抄底</span><span class="n" id="depV">50%</span></div>
+        <div class="slabel"><span>Portfolio Management：投入多少「子弹」抄底</span><span class="n" id="depV">50%</span></div>
         <input type="range" id="dep" min="0" max="100" value="50">
         <div class="results" style="margin-top:16px">
           <div class="res allin">
@@ -155,7 +155,7 @@
             <div class="dd" id="allinFinalDD"></div>
           </div>
           <div class="res gps">
-            <div class="tag">🛰️ GPS（用子弹在低点加仓）</div>
+            <div class="tag">🛰️ Portfolio Management（用子弹在低点加仓）</div>
             <div class="big" id="gpsFinal">RM —</div>
             <div class="dd" id="gpsFinalDD"></div>
           </div>
@@ -223,7 +223,7 @@
     $('scagrV').textContent=scagr+'%'; $('gcagrV').textContent=gcagr+'%';
     $('pcagrV').textContent=pcagr+'%'; $('ccagrV').textContent=ccagr+'%';
     const blended=(s*scagr+g*gcagr+p*pcagr+c*ccagr)/100;
-    $('cagrOut').innerHTML='你的 GPS 组合 <b>平时（非崩盘）年化 ≈ '+blended.toFixed(1)+'%</b> —— '+
+    $('cagrOut').innerHTML='你的 Portfolio Management 组合 <b>平时（非崩盘）年化 ≈ '+blended.toFixed(1)+'%</b> —— '+
       '把这个数字填进 Coast FIRE 计算器的「退休前 CAGR」，就知道你多快到 F U Money。'+
       (total!==100?'<br><span style="color:var(--bad)">（配置合计要先调到 100% 才准）</span>':'');
 
@@ -250,7 +250,7 @@
     $('gpsBullets').textContent = '可动用子弹（黄金＋现金）：'+rm(bullets)+' —— 别人恐慌，你有钱抄底 😎';
 
     const diff = gps-allin;
-    $('verdict').innerHTML = '同一场崩盘：全押的人剩 <b>'+rm(allin)+'</b>，GPS 的人剩 <b>'+rm(gps)+'</b>——'+
+    $('verdict').innerHTML = '同一场崩盘：全押的人剩 <b>'+rm(allin)+'</b>，Portfolio Management 的人剩 <b>'+rm(gps)+'</b>——'+
       '多守住 <b>'+rm(diff)+'</b>，而且手上还有 <b>'+rm(bullets)+'</b> 子弹可以趁低买。<b>差别不是运气，是布局。</b>';
 
     // Phase 2 — 美股涨回崩盘前原点（不需 user input）
@@ -271,7 +271,7 @@
     $('gpsFinalDD').className = 'dd '+(gpsFinal>=start?'pos':'neg');
     const d2 = gpsFinal-allinFinal;
     $('verdict2').innerHTML = '美股涨回原点后：全押只是<b>打平</b>（回到 '+rm(allinFinal)+'），'+
-      'GPS 却变成 <b>'+rm(gpsFinal)+'</b>'+(d2>=0?'，多赚 <b>'+rm(d2)+'</b>——因为你在低点用子弹加了仓。':'。')+
+      'Portfolio Management 却变成 <b>'+rm(gpsFinal)+'</b>'+(d2>=0?'，多赚 <b>'+rm(d2)+'</b>——因为你在低点用子弹加了仓。':'。')+
       ' <b>同样一场崩盘，别人打平，你已经赚钱。</b>';
     saveState();
   }

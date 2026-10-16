@@ -31,6 +31,13 @@
   .slabel{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
   .slabel .n{font-weight:700;font-variant-numeric:tabular-nums}
   .alloc .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+  .alloc .slabel{align-items:center;gap:10px;flex-wrap:wrap}
+  .alloc .slabel label{display:flex;align-items:center}
+  .alloc .entry{display:inline-flex;align-items:center;gap:6px;margin-left:auto}
+  .alloc input[type=number]{width:76px;padding:8px;min-height:40px}
+  .alloc input[type=number]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .alloc .amount{color:var(--sub);font-size:13px;white-space:nowrap}
+  .alloc .hint{color:var(--sub);font-size:12px;margin:-4px 0 12px}
   .sum{font-size:13px;margin-top:6px}
   .sum.ok{color:var(--good)} .sum.bad{color:var(--bad)}
   /* result */
@@ -80,14 +87,15 @@
     <!-- GPS 配置 -->
     <div class="card alloc">
       <h2>② 你的 GPS 配置</h2>
-      <div class="slabel"><span><span class="dot" style="background:var(--stock)"></span>美股（引擎）</span><span class="n" id="sV">70%</span></div>
-      <input type="range" id="s" min="0" max="100" value="70">
-      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--gold)"></span>黄金（保险/子弹）</span><span class="n" id="gV">15%</span></div>
-      <input type="range" id="g" min="0" max="100" value="15">
-      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--prop)"></span>房产（根基）</span><span class="n" id="pV">10%</span></div>
-      <input type="range" id="p" min="0" max="100" value="10">
-      <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--cash)"></span>现金（子弹）</span><span class="n" id="cV">5%</span></div>
-      <input type="range" id="c" min="0" max="100" value="5">
+      <p class="hint">拖动滑条，或直接输入百分比（0–100）。</p>
+      <div class="slabel"><label for="sInput"><span class="dot" style="background:var(--stock)"></span>美股（引擎）</label><span class="entry"><input type="number" id="sInput" min="0" max="100" step="1" value="70" inputmode="numeric" aria-label="美股配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="sV"></span></span></div>
+      <input type="range" id="s" min="0" max="100" value="70" aria-label="美股配置滑条">
+      <div class="slabel" style="margin-top:12px"><label for="gInput"><span class="dot" style="background:var(--gold)"></span>黄金（保险/子弹）</label><span class="entry"><input type="number" id="gInput" min="0" max="100" step="1" value="15" inputmode="numeric" aria-label="黄金配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="gV"></span></span></div>
+      <input type="range" id="g" min="0" max="100" value="15" aria-label="黄金配置滑条">
+      <div class="slabel" style="margin-top:12px"><label for="pInput"><span class="dot" style="background:var(--prop)"></span>房产（根基）</label><span class="entry"><input type="number" id="pInput" min="0" max="100" step="1" value="10" inputmode="numeric" aria-label="房产配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="pV"></span></span></div>
+      <input type="range" id="p" min="0" max="100" value="10" aria-label="房产配置滑条">
+      <div class="slabel" style="margin-top:12px"><label for="cInput"><span class="dot" style="background:var(--cash)"></span>现金（子弹）</label><span class="entry"><input type="number" id="cInput" min="0" max="100" step="1" value="5" inputmode="numeric" aria-label="现金配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="cV"></span></span></div>
+      <input type="range" id="c" min="0" max="100" value="5" aria-label="现金配置滑条">
       <div class="sum" id="sum">合计：100%</div>
     </div>
   </div>
@@ -170,6 +178,22 @@
   const rm = n => 'RM ' + Math.round(n).toLocaleString('en-US');
   const ids = ['start','crash','gold','prop','s','g','p','c','dep','scagr','gcagr','pcagr','ccagr'];
   ids.forEach(i => $(i).addEventListener('input', calc));
+  const allocIds = ['s','g','p','c'];
+  allocIds.forEach(id => {
+    const slider = $(id), input = $(id+'Input');
+    input.addEventListener('input', () => {
+      // Keep an empty field editable without replacing the last valid allocation.
+      if(input.value==='' || !Number.isFinite(input.valueAsNumber)) return;
+      // Let the slider apply the same bounds and whole-percent step to both controls.
+      slider.value = input.value;
+      input.value = slider.value;
+      calc();
+    });
+    input.addEventListener('blur', () => { input.value = slider.value; });
+    input.addEventListener('keydown', event => {
+      if(event.key==='Enter') input.blur();
+    });
+  });
 
   const STORE='gps_sim_v1';
   function saveState(){ try{ const o={}; ids.forEach(i=>o[i]=$(i).value); localStorage.setItem(STORE,JSON.stringify(o)); }catch(e){} }
@@ -183,8 +207,11 @@
     $('crashV').textContent = crash+'%';
     $('goldV').textContent = (gold>=0?'+':'')+gold+'%';
     $('propV').textContent = (prop>=0?'+':'')+prop+'%';
-    $('sV').textContent=s+'% · '+rm(start*s/100); $('gV').textContent=g+'% · '+rm(start*g/100);
-    $('pV').textContent=p+'% · '+rm(start*p/100); $('cV').textContent=c+'% · '+rm(start*c/100);
+    allocIds.forEach(id => {
+      const input = $(id+'Input');
+      if(document.activeElement!==input) input.value = $(id).value;
+      $(id+'V').textContent = '· '+rm(start*$(id).value/100);
+    });
 
     const total = s+g+p+c;
     const sumEl = $('sum');

@@ -14,14 +14,14 @@
 <main class="wrap">
 <h1>Portfolio Management 推演器 <span class="badge">分批加仓 · 教学情境</span></h1>
 <div class="sub">把现金和黄金分批转换成股票：每一批投入多少、在什么价格买入、回到原前高后值多少，都逐笔算清楚。</div>
-<div class="toolbar"><button id="coursePreset" class="primary">载入课件示例 · 75股 / 10现金 / 15金</button><button id="noQE">试试：全程未 QE</button><button id="reset">↺ 重置</button><span class="mini">改动会保存在本机浏览器</span></div>
+<div class="toolbar"><button id="coursePreset" class="primary">载入课件示例 · 75股 / 10现金 / 15金</button><button id="reset">↺ 重置</button><span class="mini">资金与配置改动会保存在本机浏览器</span></div>
 <div class="grid">
 <section class="card">
 <h2>① 市场情景</h2>
 <div class="row"><label for="start">起始资金（RM）</label><input id="start" type="number" min="0" max="1000000000000" step="10000" value="100000"></div>
 <div class="row"><label for="crashInput">S&amp;P 500 最低跌幅</label><span class="entry"><input type="number" id="crashInput" min="-95" max="0" step="1" value="-60" aria-label="最低跌幅百分比"><span>%</span></span></div>
 <input type="range" id="crash" min="-95" max="0" value="-60" aria-label="最低跌幅滑条">
-<p class="note">以危机前高价＝100 推演。只有到达所选最低跌幅前的观察点，才计入本次加仓；黄金价格假设在下面逐行输入。</p>
+<p class="note">以危机前高价＝100 推演。只有到达所选最低跌幅前的课件档位，才计入本次加仓；各档跌幅、黄金涨幅和 QE 状态固定采用课件预设。</p>
 <div class="row"><label for="recoveryGold">回到前高时，未卖出的黄金</label><select id="recoveryGold"><option value="hold">维持所选低点的黄金涨幅</option><option value="flat">回到起始价（0%）</option></select></div>
 <p class="note" id="goldAssumption"></p>
 </section>
@@ -36,12 +36,12 @@
 </section>
 </div>
 <section class="card">
-<h2>③ 分批规则与观察路径</h2>
+<h2>③ 课件预设 · 分批投入明细</h2>
 <div class="rules"><div class="rule"><b>现金三批：跌 10% → 20% → 30%</b><p>每批约起始现金的 1/3，第三批投入余下全部现金。不是每次取剩余现金的 1/3。</p></div><div class="rule"><b>黄金三批：跌 40% → 50% → 60%</b><p>每批约原有黄金数量的 1/3。须现金批次已完成、Fed 已 QE、金价高于起点；条件不足则等待。</p></div></div>
-<div class="callout">每一行代表一个独立观察时点，只执行一个下一批次。可以把跌幅改成 18%、28% 等实际观察值；快速跳跌不会在同一行补完多批。所有金价与 QE 时点均为可修改的假设。</div>
-<p class="note">黄金涨幅以危机起点为基准，不是逐行复利涨幅。修改后按实际输入的成交跌幅计算；跌幅须按顺序不减，可用相同跌幅表示不同日期。</p>
+<div class="callout">以下固定跟随课件：现金在跌 10%、20%、30% 时分三批投入；黄金在跌 40%、50%、60% 时，按已 QE 与金价上涨的预设分三批转换成股票。学生无需填写这张表，投入金额会随起始资金与资产配置自动重算。</div>
+<p class="note">黄金涨幅依次预设为 0%、0%、+2%、+15%、+25%、+40%，以危机起点为基准；不是逐行复利涨幅。跌 60% 后本预设已用完黄金，70% 与 80% 不再追加。每档视作不同观察时点，快速跳跌不代表同日补完多批。</p>
 <div id="validation" class="error" role="alert" hidden></div>
-<div class="table-wrap" tabindex="0" role="region" aria-label="分批投入明细，可左右滚动"><table id="ledger"><caption>观察路径与逐批投入明细（价格代理：前高＝100）</caption><thead><tr><th>观察点</th><th>股市跌幅</th><th>黄金涨幅</th><th>已 QE</th><th>本轮动作 / 条件</th><th>本轮补股</th><th>成交价格</th><th>此批回前高值</th><th>此批股票盈亏</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="分批投入明细，可左右滚动"><table id="ledger"><caption>课件预设与逐批投入明细（价格代理：前高＝100）</caption><thead><tr><th>观察点</th><th>股市跌幅</th><th>黄金涨幅</th><th>QE 状态</th><th>本轮动作 / 条件</th><th>本轮补股</th><th>成交价格</th><th>此批回前高值</th><th>此批股票盈亏</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
 <p class="mini">浅色行超出当前最低跌幅，仅用于比较更深跌幅的情境。每档只执行一次；未卖出的黄金继续持有。第三批黄金卖出余下全部数量。</p>
 </section>
 <div id="outputs">
@@ -125,19 +125,18 @@ const allocs=[['s','美股 / ETF','stock',75],['g','黄金','gold',15],['p','房
 const cagrs=[['scagr','美股 CAGR',10,40],['gcagr','黄金 CAGR',6,20],['pcagr','房产 CAGR',5,20],['ccagr','现金 CAGR',3,20]];
 $('allocControls').innerHTML=allocs.map(([id,label,color,value])=>'<div class="row"><label for="'+id+'Input"><span class="dot" style="background:var(--'+color+')"></span>'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="100" step="1" value="'+value+'" aria-label="'+label+'配置百分比"><span>%</span><span class="amount" id="'+id+'V"></span></span></div><input type="range" id="'+id+'" min="0" max="100" value="'+value+'" aria-label="'+label+'配置滑条">').join('');
 $('cagrControls').innerHTML=cagrs.map(([id,label,value,max])=>'<div><div class="row"><label for="'+id+'Input">'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'百分比"><span>%</span></span></div><input type="range" id="'+id+'" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'滑条"></div>').join('');
-$('ledgerBody').innerHTML=DEFAULT_PATH.map((r,i)=>'<tr id="stage'+i+'"><td>第 '+(i+1)+' 次</td><td><span class="entry">−<input type="number" id="drop'+i+'" min="0" max="95" step="0.1" value="'+r.drop+'" aria-label="观察点'+(i+1)+'股市跌幅">%</span></td><td><span class="entry"><input type="number" id="gold'+i+'" min="-100" max="1000" step="0.1" value="'+r.gold+'" aria-label="观察点'+(i+1)+'黄金涨幅">%</span></td><td><input type="checkbox" id="qe'+i+'" '+(r.qe?'checked':'')+' aria-label="观察点'+(i+1)+'已启动QE"></td><td class="action" id="action'+i+'"></td><td id="spend'+i+'"></td><td id="price'+i+'"></td><td id="recovery'+i+'"></td><td id="gain'+i+'"></td></tr>').join('');
-const ids=['start','crash','prop','s','g','p','c','scagr','gcagr','pcagr','ccagr','recoveryGold',...DEFAULT_PATH.flatMap((r,i)=>['drop'+i,'gold'+i,'qe'+i])];
+$('ledgerBody').innerHTML=DEFAULT_PATH.map((r,i)=>'<tr id="stage'+i+'"><td>第 '+(i+1)+' 次</td><td>−'+r.drop+'%</td><td>'+(i<6?(r.gold>0?'+':'')+r.gold+'%':'—')+'</td><td>'+(i<3?'尚未 QE':i<6?'已 QE':'—')+'</td><td class="action" id="action'+i+'"></td><td id="spend'+i+'"></td><td id="price'+i+'"></td><td id="recovery'+i+'"></td><td id="gain'+i+'"></td></tr>').join('');
+const ids=['start','crash','prop','s','g','p','c','scagr','gcagr','pcagr','ccagr','recoveryGold'];
 const STORE='portfolio_staged_v2';
 function saveState(){try{const o={};ids.forEach(id=>o[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
 function loadState(){try{const o=JSON.parse(localStorage.getItem(STORE)||'null');if(!o)return;ids.forEach(id=>{if(o[id]!=null){if($(id).type==='checkbox')$(id).checked=o[id]===true;else $(id).value=o[id];}});}catch(e){}}
 function getConfig(){return {start:$('start').valueAsNumber,s:+$('s').value,g:+$('g').value,p:+$('p').value,c:+$('c').value,prop:+$('prop').value};}
-function getPath(){return DEFAULT_PATH.map((r,i)=>({drop:$('drop'+i).valueAsNumber,gold:$('gold'+i).valueAsNumber,qe:$('qe'+i).checked}));}
+function getPath(){return DEFAULT_PATH.map(r=>({...r}));}
 function sync(){['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{if(document.activeElement!==$(id+'Input'))$(id+'Input').value=$(id).value;});}
 ['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{const slider=$(id),input=$(id+'Input');input.addEventListener('input',()=>{if(input.value===''||!Number.isFinite(input.valueAsNumber))return;slider.value=input.value;input.value=slider.value;calc();});input.addEventListener('blur',()=>input.value=slider.value);input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();});});
 ids.forEach(id=>$(id).addEventListener('input',calc));
 function preset(){try{localStorage.removeItem(STORE);}catch(e){} location.reload();}
 $('coursePreset').addEventListener('click',preset);$('reset').addEventListener('click',preset);
-$('noQE').addEventListener('click',()=>{DEFAULT_PATH.forEach((r,i)=>$('qe'+i).checked=false);calc();});
 function calc(){
   sync(); const config=getConfig(),path=getPath(),depth=-$('crash').value;
   const total=config.s+config.g+config.p+config.c;

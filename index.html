@@ -2,280 +2,181 @@
 <html lang="zh-Hans">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio Management 推演器 · 全押 vs 布局</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio Management 推演器 · 分批现金与黄金</title>
 <style>
-  :root{
-    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f2f5f9; --line:#e4e9f0;
-    --ink:#1a2230; --sub:#5b6675; --accent:#0ea5b7;
-    --stock:#3b6fe0; --gold:#c9931a; --prop:#1f9d6b; --cash:#98a2b3;
-    --bad:#e5484d; --good:#12a06a;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
-       background:var(--bg);color:var(--ink);}
-  .wrap{max-width:1080px;margin:0 auto;padding:22px 18px 60px;}
-  h1{font-size:26px;margin:6px 0 2px;letter-spacing:.5px}
-  h1 .badge{font-size:12px;background:var(--accent);color:#04222a;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:8px;font-weight:700}
-  .sub{color:var(--sub);font-size:14px;margin-bottom:18px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:820px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
-  .card h2{margin:0 0 12px;font-size:16px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:1px}
-  .row{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
-  .row label{font-size:15px}
-  .row .val{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px}
-  input[type=range]{width:100%;accent-color:var(--accent);height:4px}
-  input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
-       border-radius:8px;padding:8px 10px;width:140px;font-size:16px;text-align:right}
-  .slabel{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
-  .slabel .n{font-weight:700;font-variant-numeric:tabular-nums}
-  .alloc .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
-  .alloc .slabel{align-items:center;gap:10px;flex-wrap:wrap}
-  .alloc .slabel label{display:flex;align-items:center}
-  .alloc .entry{display:inline-flex;align-items:center;gap:6px;margin-left:auto}
-  .alloc input[type=number]{width:76px;padding:8px;min-height:40px}
-  .alloc input[type=number]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .alloc .amount{color:var(--sub);font-size:13px;white-space:nowrap}
-  .alloc .hint{color:var(--sub);font-size:12px;margin:-4px 0 12px}
-  .sum{font-size:13px;margin-top:6px}
-  .sum.ok{color:var(--good)} .sum.bad{color:var(--bad)}
-  /* result */
-  .results{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:820px){.results{grid-template-columns:1fr}}
-  .res{border-radius:16px;padding:20px;border:1px solid var(--line)}
-  .res.allin{background:#fdf1f2;border-color:#f4ccd0}
-  .res.gps{background:#eefaf4;border-color:#c6ecd8}
-  .res .tag{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--sub)}
-  .res .big{font-size:34px;font-weight:800;margin:6px 0;font-variant-numeric:tabular-nums}
-  .res .dd{font-size:15px;font-weight:700}
-  .dd.neg{color:var(--bad)} .dd.pos{color:var(--good)}
-  .bar{height:12px;background:#eef1f5;border-radius:8px;overflow:hidden;margin:12px 0 4px}
-  .bar > i{display:block;height:100%}
-  .bullets{margin-top:10px;font-size:14px;color:var(--gold)}
-  .verdict{margin-top:18px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;
-           padding:16px 18px;font-size:16px;line-height:1.6}
-  .verdict b{color:var(--accent)}
-  .phase2{margin-top:20px}
-  details summary{cursor:pointer;color:var(--accent);font-size:15px;font-weight:600;margin:8px 0}
-  .fine{color:var(--sub);font-size:12px;margin-top:26px;line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
-  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--sub);margin:2px 4px 2px 0}
+:root{--bg:#f5f7fa;--panel:#fff;--line:#e2e8f0;--ink:#1a2230;--sub:#5b6675;--accent:#087f91;--good:#087b50;--bad:#bf353a;--stock:#3b6fe0;--gold:#b58212;--prop:#1f9d6b;--cash:#98a2b3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6}.wrap{max-width:1200px;margin:auto;padding:28px 20px 60px}h1{font-size:clamp(23px,4vw,32px);line-height:1.3;margin:0 0 10px}h2{font-size:19px;margin:0 0 10px}h3{font-size:16px;margin:20px 0 8px}.sub,.note{color:var(--sub);font-size:14px}.note{margin:8px 0}.badge,.chip{display:inline-block;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;background:#e5f4f5;color:var(--accent)}.badge{vertical-align:middle}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0 20px}button{background:white;color:var(--ink);border:1px solid #cbd5e1;border-radius:9px;padding:9px 14px;cursor:pointer;font-size:14px}button.primary{background:var(--accent);color:white;border-color:var(--accent)}button:hover{filter:brightness(.96)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.grid,.results{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:white;border:1px solid var(--line);padding:22px;border-radius:16px;box-shadow:0 2px 4px #10203004;margin-bottom:18px}.row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:12px 0;flex-wrap:wrap}.row label{font-size:14px}.entry{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-variant-numeric:tabular-nums}.amount{font-size:13px;color:var(--sub);min-width:92px;text-align:right}input[type=number]{width:80px;padding:8px;border-radius:8px;border:1px solid #ccd6e2;background:#f5f7fa;color:var(--ink);font-size:16px;text-align:right;min-height:40px}#start{width:150px}input[type=range]{width:100%;accent-color:var(--accent);margin:5px 0 12px}input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.sum{font-size:14px;font-weight:600;margin-top:8px}.ok,.pos{color:var(--good)}.bad,.neg{color:var(--bad)}.callout{background:#eef6f8;border-left:3px solid var(--accent);border-radius:8px;padding:12px 15px;font-size:14px;margin:12px 0}.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}.rule{background:#f6f8fb;border:1px solid var(--line);border-radius:12px;padding:14px}.rule b{display:block;margin-bottom:5px}.rule p{font-size:13px;margin:4px 0;color:var(--sub)}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:12px 0}table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}caption{text-align:left;padding:12px;font-weight:600;background:#f5f8fb}th{background:#edf2f7;text-align:right;padding:12px;color:#445365;font-weight:600}td{padding:12px;text-align:right;border-top:1px solid var(--line)}th:first-child,td:first-child{text-align:left}td.action{text-align:left;white-space:normal;min-width:160px;max-width:220px}td small{display:block;color:var(--sub);font-size:11px}tbody tr.selected{background:#eaf7f7}tbody tr.future{color:#697787;background:#fafbfd}table input[type=number]{width:74px;font-size:14px}table .entry{gap:4px}.status{font-size:11px;font-weight:600;display:inline-block;padding:2px 7px;border-radius:12px;background:#e6f5ed;color:var(--good)}.status.wait{background:#fff2d7;color:#855d00}.status.pending{background:#edf0f4;color:#697787}.results{margin:18px 0}.res{padding:20px;border-radius:14px;border:1px solid var(--line);background:#f9fafc}.res.highlight{background:#edf9f3;border-color:#b9dfcd}.res .tag{font-size:13px;color:var(--sub)}.big{font-size:clamp(25px,4vw,34px);font-weight:800;line-height:1.3;margin:8px 0}.res p{font-size:14px;margin:5px 0}.breakdown{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.breakdown div{padding:12px;background:#f5f7fa;border-radius:10px;font-size:12px;color:var(--sub)}.breakdown b{display:block;color:var(--ink);font-size:17px;margin-top:4px}.fine{font-size:12px;color:var(--sub);border-top:1px solid var(--line);padding-top:18px;margin-top:24px}.fine p{margin:7px 0}details summary{cursor:pointer;color:var(--accent);font-size:15px;font-weight:600}a{color:var(--accent)}select{font-size:15px;background:#f5f7fa;border:1px solid #ccd6e2;border-radius:8px;padding:9px;max-width:100%;color:var(--ink)}[hidden]{display:none!important}.error{background:#fff0f0;border:1px solid #edb7b7;color:#9f272d;padding:14px;border-radius:10px;margin:14px 0}#scenarioTitle{font-size:17px}.mini{font-size:12px;color:var(--sub)}
+@media(max-width:820px){.grid,.results,.rules{grid-template-columns:1fr}.wrap{padding:20px 14px 40px}.card{padding:18px}.breakdown{grid-template-columns:1fr 1fr}.amount{min-width:80px}.row{gap:6px}.row label{max-width:100%}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Portfolio Management 推演器 <span class="badge">情景演示</span></h1>
-  <div class="sub">同一场崩盘，<b>全押美股</b> vs <b>Portfolio Management 布局</b>（美股 · 黄金 · 房产），结局差多少？拉动下面的数字试试看。
-  <button onclick="resetState()" style="margin-left:8px;background:var(--panel2);color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer">↺ 重置</button>
-  <span style="font-size:12px;color:var(--sub)">（改动会自动保存）</span></div>
-
-  <div class="grid">
-    <!-- 市场情景 -->
-    <div class="card">
-      <h2>① 市场情景（假设）</h2>
-      <div class="row"><label>起始资金 (RM)</label>
-        <input type="number" id="start" value="100000" step="10000" min="0"></div>
-      <div class="slabel"><span>美股崩盘幅度</span><span class="n" id="crashV">-40%</span></div>
-      <input type="range" id="crash" min="-70" max="0" value="-40">
-      <div class="slabel" style="margin-top:14px"><span>黄金涨跌</span><span class="n" id="goldV">+15%</span></div>
-      <input type="range" id="gold" min="-30" max="60" value="15">
-      <div class="slabel" style="margin-top:14px"><span>房产价值变化</span><span class="n" id="propV">0%</span></div>
-      <input type="range" id="prop" min="-30" max="30" value="0">
-      <div style="margin-top:10px;font-size:13px;color:var(--sub)">💡 房产就算价值不动，租金现金流照收 —— 这就是「根基」。</div>
-    </div>
-
-    <!-- Portfolio Management 配置 -->
-    <div class="card alloc">
-      <h2>② 你的 Portfolio Management 配置</h2>
-      <p class="hint">拖动滑条，或直接输入百分比（0–100）。</p>
-      <div class="slabel"><label for="sInput"><span class="dot" style="background:var(--stock)"></span>美股（引擎）</label><span class="entry"><input type="number" id="sInput" min="0" max="100" step="1" value="70" inputmode="numeric" aria-label="美股配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="sV"></span></span></div>
-      <input type="range" id="s" min="0" max="100" value="70" aria-label="美股配置滑条">
-      <div class="slabel" style="margin-top:12px"><label for="gInput"><span class="dot" style="background:var(--gold)"></span>黄金（保险/子弹）</label><span class="entry"><input type="number" id="gInput" min="0" max="100" step="1" value="15" inputmode="numeric" aria-label="黄金配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="gV"></span></span></div>
-      <input type="range" id="g" min="0" max="100" value="15" aria-label="黄金配置滑条">
-      <div class="slabel" style="margin-top:12px"><label for="pInput"><span class="dot" style="background:var(--prop)"></span>房产（根基）</label><span class="entry"><input type="number" id="pInput" min="0" max="100" step="1" value="10" inputmode="numeric" aria-label="房产配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="pV"></span></span></div>
-      <input type="range" id="p" min="0" max="100" value="10" aria-label="房产配置滑条">
-      <div class="slabel" style="margin-top:12px"><label for="cInput"><span class="dot" style="background:var(--cash)"></span>现金（子弹）</label><span class="entry"><input type="number" id="cInput" min="0" max="100" step="1" value="5" inputmode="numeric" aria-label="现金配置百分比"><span aria-hidden="true">%</span><span class="n amount" id="cV"></span></span></div>
-      <input type="range" id="c" min="0" max="100" value="5" aria-label="现金配置滑条">
-      <div class="sum" id="sum">合计：100%</div>
-    </div>
-  </div>
-
-  <!-- 平时组合 CAGR -->
-  <div class="card" style="margin-top:18px">
-    <h2>③ 平时（非崩盘）各资产年化回报 CAGR</h2>
-    <div class="grid" style="gap:14px">
-      <div>
-        <div class="slabel"><span><span class="dot" style="background:var(--stock)"></span>美股 CAGR</span><span class="n" id="scagrV">10%</span></div>
-        <input type="range" id="scagr" min="0" max="40" step="0.5" value="10">
-        <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--prop)"></span>房产 CAGR</span><span class="n" id="pcagrV">5%</span></div>
-        <input type="range" id="pcagr" min="0" max="20" step="0.5" value="5">
-      </div>
-      <div>
-        <div class="slabel"><span><span class="dot" style="background:var(--gold)"></span>黄金 CAGR</span><span class="n" id="gcagrV">6%</span></div>
-        <input type="range" id="gcagr" min="0" max="20" step="0.5" value="6">
-        <div class="slabel" style="margin-top:12px"><span><span class="dot" style="background:var(--cash)"></span>现金 CAGR</span><span class="n" id="ccagrV">3%</span></div>
-        <input type="range" id="ccagr" min="0" max="20" step="0.5" value="3">
-      </div>
-    </div>
-    <div class="verdict" id="cagrOut" style="margin-top:16px"></div>
-  </div>
-
-  <!-- 结果 -->
-  <div class="results">
-    <div class="res allin">
-      <div class="tag">🗡️ 全押美股（100%）</div>
-      <div class="big" id="allinVal">RM 60,000</div>
-      <div class="dd neg" id="allinDD">崩盘后 −40%</div>
-      <div class="bar"><i id="allinBar" style="background:var(--bad);width:60%"></i></div>
-      <div class="bullets">可动用子弹：RM 0 —— 崩盘时只能干等或割肉 😰</div>
-    </div>
-    <div class="res gps">
-      <div class="tag">🛰️ Portfolio Management 布局</div>
-      <div class="big" id="gpsVal">RM 91,500</div>
-      <div class="dd neg" id="gpsDD">崩盘后 −8.5%</div>
-      <div class="bar"><i id="gpsBar" style="background:var(--good);width:91%"></i></div>
-      <div class="bullets" id="gpsBullets">可动用子弹（黄金＋现金）：RM 22,250 —— 别人恐慌，你有钱抄底 😎</div>
-    </div>
-  </div>
-
-  <div class="verdict" id="verdict"></div>
-
-  <!-- Phase 2 反弹 -->
-  <div class="phase2">
-    <details>
-      <summary>▶ 加演：美股涨回崩盘前原点，谁赚更多？（用子弹抄底）</summary>
-      <div class="card" style="margin-top:10px">
-        <div style="font-size:14px;color:var(--sub);margin-bottom:14px">情景：美股慢慢<b style="color:var(--ink)">涨回崩盘前的原点</b>。从 <span id="rbFrom">-40%</span> 涨回原点，需要 <b style="color:var(--accent)" id="rbNeed">+66.7%</b>（这就是为什么崩盘时手上有子弹的人赚更多）。</div>
-        <div class="slabel"><span>Portfolio Management：投入多少「子弹」抄底</span><span class="n" id="depV">50%</span></div>
-        <input type="range" id="dep" min="0" max="100" value="50">
-        <div class="results" style="margin-top:16px">
-          <div class="res allin">
-            <div class="tag">🗡️ 全押美股（无子弹，只能持有）</div>
-            <div class="big" id="allinFinal">RM 78,000</div>
-            <div class="dd" id="allinFinalDD"></div>
-          </div>
-          <div class="res gps">
-            <div class="tag">🛰️ Portfolio Management（用子弹在低点加仓）</div>
-            <div class="big" id="gpsFinal">RM —</div>
-            <div class="dd" id="gpsFinalDD"></div>
-          </div>
-        </div>
-        <div class="verdict" id="verdict2" style="margin-top:16px"></div>
-      </div>
-    </details>
-  </div>
-
-  <div class="fine">
-    <span class="pill">情景演示</span><span class="pill">假设数字</span><span class="pill">教育用途</span><br>
-    本工具为教育性情景推演，所有数字均为假设输入，<b>不代表任何资产的未来表现、不构成投资建议、不承诺任何回报</b>。
-    历史上崩盘时各资产走势并非固定（例如 2022 年股与金曾同跌）——重点不是「黄金一定涨」，而是「不同资产周期常常错开、可以互相对冲，让你手上永远有子弹」。
-    投资有风险，请按自身情况判断或咨询持牌专业人士。
-  </div>
+<main class="wrap">
+<h1>Portfolio Management 推演器 <span class="badge">分批加仓 · 教学情境</span></h1>
+<div class="sub">把现金和黄金分批转换成股票：每一批投入多少、在什么价格买入、回到原前高后值多少，都逐笔算清楚。</div>
+<div class="toolbar"><button id="coursePreset" class="primary">载入课件示例 · 75股 / 10现金 / 15金</button><button id="noQE">试试：全程未 QE</button><button id="reset">↺ 重置</button><span class="mini">改动会保存在本机浏览器</span></div>
+<div class="grid">
+<section class="card">
+<h2>① 市场情景</h2>
+<div class="row"><label for="start">起始资金（RM）</label><input id="start" type="number" min="0" max="1000000000000" step="10000" value="100000"></div>
+<div class="row"><label for="crashInput">S&amp;P 500 最低跌幅</label><span class="entry"><input type="number" id="crashInput" min="-95" max="0" step="1" value="-60" aria-label="最低跌幅百分比"><span>%</span></span></div>
+<input type="range" id="crash" min="-95" max="0" value="-60" aria-label="最低跌幅滑条">
+<p class="note">以危机前高价＝100 推演。只有到达所选最低跌幅前的观察点，才计入本次加仓；黄金价格假设在下面逐行输入。</p>
+<div class="row"><label for="recoveryGold">回到前高时，未卖出的黄金</label><select id="recoveryGold"><option value="hold">维持所选低点的黄金涨幅</option><option value="flat">回到起始价（0%）</option></select></div>
+<p class="note" id="goldAssumption"></p>
+</section>
+<section class="card alloc">
+<h2>② 你的 Portfolio Management 配置</h2>
+<p class="note">拖动滑条，或直接输入百分比（0–100）。</p>
+<div id="allocControls"></div>
+<div class="sum" id="sum"></div>
+<div class="row"><label for="propInput">房产价值变化（低点及恢复时）</label><span class="entry"><input type="number" id="propInput" min="-30" max="30" step="1" value="0" aria-label="房产价值变化百分比"><span>%</span></span></div>
+<input type="range" id="prop" min="-30" max="30" value="0" aria-label="房产价值变化滑条">
+<p class="note">课件示例不含房产。若加入房产，假设其变化维持至终点；本模拟不计租金。</p>
+</section>
 </div>
-
+<section class="card">
+<h2>③ 分批规则与观察路径</h2>
+<div class="rules"><div class="rule"><b>现金三批：跌 10% → 20% → 30%</b><p>每批约起始现金的 1/3，第三批投入余下全部现金。不是每次取剩余现金的 1/3。</p></div><div class="rule"><b>黄金三批：跌 40% → 50% → 60%</b><p>每批约原有黄金数量的 1/3。须现金批次已完成、Fed 已 QE、金价高于起点；条件不足则等待。</p></div></div>
+<div class="callout">每一行代表一个独立观察时点，只执行一个下一批次。可以把跌幅改成 18%、28% 等实际观察值；快速跳跌不会在同一行补完多批。所有金价与 QE 时点均为可修改的假设。</div>
+<p class="note">黄金涨幅以危机起点为基准，不是逐行复利涨幅。修改后按实际输入的成交跌幅计算；跌幅须按顺序不减，可用相同跌幅表示不同日期。</p>
+<div id="validation" class="error" role="alert" hidden></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="分批投入明细，可左右滚动"><table id="ledger"><caption>观察路径与逐批投入明细（价格代理：前高＝100）</caption><thead><tr><th>观察点</th><th>股市跌幅</th><th>黄金涨幅</th><th>已 QE</th><th>本轮动作 / 条件</th><th>本轮补股</th><th>成交价格</th><th>此批回前高值</th><th>此批股票盈亏</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
+<p class="mini">浅色行超出当前最低跌幅，仅用于比较更深跌幅的情境。每档只执行一次；未卖出的黄金继续持有。第三批黄金卖出余下全部数量。</p>
+</section>
+<div id="outputs">
+<section class="card">
+<h2 id="scenarioTitle">④ 本次情境：回到原前高后</h2>
+<div class="callout" id="summary"></div>
+<div class="results"><div class="res"><div class="tag">100% 股票 · 持有至恢复前高</div><div class="big" id="allinFinal"></div><p id="allinROI"></p><p class="note">价格回到起点，不计股息与费用。</p></div><div class="res highlight"><div class="tag">按规则分批加仓 · 恢复前高时组合</div><div class="big" id="portfolioFinal"></div><p id="portfolioROI"></p><p id="profitComponents"></p></div></div>
+<div class="breakdown"><div>原有股票恢复值<b id="baseStock"></b></div><div>新增股票恢复值<b id="addedStock"></b></div><div>剩余现金<b id="cashLeft"></b></div><div>未卖黄金恢复值<b id="goldLeft"></b></div></div>
+<p class="note" id="propertyResult"></p><p class="note" id="flatResult"></p>
+<details><summary>查看跌至低点时的账户情况</summary><div class="results"><div class="res"><div class="tag">100% 股票 · 当前低点</div><div class="big" id="allinLow"></div></div><div class="res"><div class="tag">已按路径加仓 · 当前低点</div><div class="big" id="portfolioLow"></div><p id="lowROI"></p></div></div><p class="note">前面买入的批次也会继续承受后续跌幅；剩余黄金也可能下跌。</p></details>
+<details><summary>查看计算口径</summary><p class="note">每批新增股票恢复值＝本批投入 ÷（1 − 成交跌幅）。组合终值＝原有股票起始金额＋各批新增股票恢复值＋剩余现金＋未卖黄金恢复值＋房产终值。整体 ROI＝（组合终值 − 起始资金）÷ 起始资金。此批股票盈亏＝此批恢复值 − 本批投入。</p><p class="note">黄金出售金额＝本批原有数量 × 当时净卖出价；界面以该数量的起始价值 ×（1＋金价涨幅）计算。整体盈亏同时包含已卖黄金的价差与新增股票盈亏，避免把卖金款项当成外部新增资金。</p></details>
+</section>
+<section class="card">
+<h2>⑤ 不同最低跌幅：恢复前高后的整体 ROI</h2>
+<p class="note">每行是「走到这个观察点后开始恢复」的独立情境，使用相同起始资金和前面已执行批次。黄金保价列沿用该行涨幅；右栏改用未卖黄金回到起始价。</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="恢复前高收益对照，可左右滚动"><table><caption>分批投入后的组合结果 · 累计回报，非年化</caption><thead><tr><th>最低跌幅</th><th>累计现金投入</th><th>黄金已卖出</th><th>黄金保价假设</th><th>恢复时组合值</th><th>整体盈亏</th><th>整体 ROI</th><th>黄金回原价 ROI</th></tr></thead><tbody id="comparisonBody"></tbody></table></div>
+<p class="note">若课件路径的黄金在跌 60% 时已用完，再跌到 70% 或 80% 也没有额外资金补股；恢复同一个前高时，累计投入所得股票的终值相同。</p>
+</section>
+</div>
+<section class="card"><details><summary>平时（非崩盘）各资产年化回报 CAGR</summary><p class="note">以下仅是另外的长期回报假设，不计入上面的危机周期 ROI，也不用于推断恢复时间。</p><div class="grid" id="cagrControls"></div><div class="callout" id="cagrOut"></div></details></section>
+<footer class="fine"><span class="chip">教育用途</span> <span class="chip">假设路径</span> <span class="chip">非收益承诺</span><p>本工具根据课程规则作一般投资教育演示，不构成个别投资建议、证券推荐或实际交易指令。资产配置、加仓档位、黄金涨幅与 QE 时点都是教学假设；不代表适合每位投资者，也不保证盈利或恢复前高。</p><p>S&amp;P 500 仅作股票回报代理，不代表个股实际收益；个股可能永久亏损。黄金可能与股票同跌，QE 不保证金价上涨。未计股息、现金利息、租金、税费、交易费用、黄金买卖价差及汇率；RM 为同一币种的记账示意。实际执行须用净卖出价并考虑变现限制。ROI 为整个假设周期累计值，非年化回报。</p><p>规则及对照：<a href="https://docs.google.com/presentation/d/13FmLvl8t2JVucogBU-yk6tZ_FZXmggNlQ0ibTmmiZ_8/edit#slide=id.p20" target="_blank" rel="noopener">课程第 23 页与相邻分批规则页</a>。投资有风险，可按需要咨询持牌专业人士。</p></footer>
+</main>
 <script>
-  const $ = id => document.getElementById(id);
-  const rm = n => 'RM ' + Math.round(n).toLocaleString('en-US');
-  const ids = ['start','crash','gold','prop','s','g','p','c','dep','scagr','gcagr','pcagr','ccagr'];
-  ids.forEach(i => $(i).addEventListener('input', calc));
-  const allocIds = ['s','g','p','c'];
-  allocIds.forEach(id => {
-    const slider = $(id), input = $(id+'Input');
-    input.addEventListener('input', () => {
-      // Keep an empty field editable without replacing the last valid allocation.
-      if(input.value==='' || !Number.isFinite(input.valueAsNumber)) return;
-      // Let the slider apply the same bounds and whole-percent step to both controls.
-      slider.value = input.value;
-      input.value = slider.value;
-      calc();
-    });
-    input.addEventListener('blur', () => { input.value = slider.value; });
-    input.addEventListener('keydown', event => {
-      if(event.key==='Enter') input.blur();
-    });
-  });
-
-  const STORE='gps_sim_v1';
-  function saveState(){ try{ const o={}; ids.forEach(i=>o[i]=$(i).value); localStorage.setItem(STORE,JSON.stringify(o)); }catch(e){} }
-  function loadState(){ try{ const s=localStorage.getItem(STORE); if(!s)return; const o=JSON.parse(s); ids.forEach(i=>{ if(o[i]!=null && $(i)) $(i).value=o[i]; }); }catch(e){} }
-  function resetState(){ try{ localStorage.removeItem(STORE); }catch(e){} location.reload(); }
-
-  function calc(){
-    const start = +$('start').value || 0;
-    const crash = +$('crash').value, gold = +$('gold').value, prop = +$('prop').value;
-    let s=+$('s').value, g=+$('g').value, p=+$('p').value, c=+$('c').value;
-    $('crashV').textContent = crash+'%';
-    $('goldV').textContent = (gold>=0?'+':'')+gold+'%';
-    $('propV').textContent = (prop>=0?'+':'')+prop+'%';
-    allocIds.forEach(id => {
-      const input = $(id+'Input');
-      if(document.activeElement!==input) input.value = $(id).value;
-      $(id+'V').textContent = '· '+rm(start*$(id).value/100);
-    });
-
-    const total = s+g+p+c;
-    const sumEl = $('sum');
-    sumEl.textContent = '合计：'+total+'%' + (total===100?'　✓':'　（请调到 100%）');
-    sumEl.className = 'sum ' + (total===100?'ok':'bad');
-
-    // 平时（非崩盘）组合 CAGR
-    const scagr=+$('scagr').value,gcagr=+$('gcagr').value,pcagr=+$('pcagr').value,ccagr=+$('ccagr').value;
-    $('scagrV').textContent=scagr+'%'; $('gcagrV').textContent=gcagr+'%';
-    $('pcagrV').textContent=pcagr+'%'; $('ccagrV').textContent=ccagr+'%';
-    const blended=(s*scagr+g*gcagr+p*pcagr+c*ccagr)/100;
-    $('cagrOut').innerHTML='你的 Portfolio Management 组合 <b>平时（非崩盘）年化 ≈ '+blended.toFixed(1)+'%</b> —— '+
-      '把这个数字填进 Coast FIRE 计算器的「退休前 CAGR」，就知道你多快到 F U Money。'+
-      (total!==100?'<br><span style="color:var(--bad)">（配置合计要先调到 100% 才准）</span>':'');
-
-    // Phase 1
-    const allin = start*(1+crash/100);
-    const gpsStock = start*s/100*(1+crash/100);
-    const gpsGold  = start*g/100*(1+gold/100);
-    const gpsProp  = start*p/100*(1+prop/100);
-    const gpsCash  = start*c/100;
-    const gps = gpsStock+gpsGold+gpsProp+gpsCash;
-    const bullets = gpsGold+gpsCash;
-
-    const allinDD = start? (allin/start-1)*100 : 0;
-    const gpsDD   = start? (gps/start-1)*100 : 0;
-
-    $('allinVal').textContent = rm(allin);
-    $('gpsVal').textContent   = rm(gps);
-    $('allinDD').textContent  = '崩盘后 '+allinDD.toFixed(1)+'%';
-    $('gpsDD').textContent    = '崩盘后 '+gpsDD.toFixed(1)+'%';
-    $('allinDD').className = 'dd '+(allinDD<0?'neg':'pos');
-    $('gpsDD').className   = 'dd '+(gpsDD<0?'neg':'pos');
-    $('allinBar').style.width = Math.max(0,Math.min(100, start?allin/start*100:0))+'%';
-    $('gpsBar').style.width   = Math.max(0,Math.min(100, start?gps/start*100:0))+'%';
-    $('gpsBullets').textContent = '可动用子弹（黄金＋现金）：'+rm(bullets)+' —— 别人恐慌，你有钱抄底 😎';
-
-    const diff = gps-allin;
-    $('verdict').innerHTML = '同一场崩盘：全押的人剩 <b>'+rm(allin)+'</b>，Portfolio Management 的人剩 <b>'+rm(gps)+'</b>——'+
-      '多守住 <b>'+rm(diff)+'</b>，而且手上还有 <b>'+rm(bullets)+'</b> 子弹可以趁低买。<b>差别不是运气，是布局。</b>';
-
-    // Phase 2 — 美股涨回崩盘前原点（不需 user input）
-    const dep = +$('dep').value;
-    $('depV').textContent = dep+'%';
-    const recMult = crash>-100 ? 1/(1+crash/100) : 1;
-    $('rbFrom').textContent = crash+'%';
-    $('rbNeed').textContent = '+'+((recMult-1)*100).toFixed(1)+'%';
-    const allinFinal = allin*recMult;
-    const deployed = bullets*dep/100;
-    const gpsStockAfter = (gpsStock+deployed)*recMult;
-    const gpsFinal = gpsStockAfter + (bullets-deployed) + gpsProp;
-    $('allinFinal').textContent = rm(allinFinal);
-    $('gpsFinal').textContent = rm(gpsFinal);
-    $('allinFinalDD').textContent = '相对起始 '+(start?((allinFinal/start-1)*100).toFixed(1):0)+'%';
-    $('gpsFinalDD').textContent = '相对起始 '+(start?((gpsFinal/start-1)*100).toFixed(1):0)+'%';
-    $('allinFinalDD').className = 'dd '+(allinFinal>=start-0.5?'pos':'neg');
-    $('gpsFinalDD').className = 'dd '+(gpsFinal>=start?'pos':'neg');
-    const d2 = gpsFinal-allinFinal;
-    $('verdict2').innerHTML = '美股涨回原点后：全押只是<b>打平</b>（回到 '+rm(allinFinal)+'），'+
-      'Portfolio Management 却变成 <b>'+rm(gpsFinal)+'</b>'+(d2>=0?'，多赚 <b>'+rm(d2)+'</b>——因为你在低点用子弹加了仓。':'。')+
-      ' <b>同样一场崩盘，别人打平，你已经赚钱。</b>';
-    saveState();
+// MODEL_START
+const DEFAULT_PATH = [10,20,30,40,50,60,70,80].map((drop,i)=>({drop,gold:[0,0,2,15,25,40,40,40][i],qe:i>=3}));
+const CASH_LEVELS = [10,20,30], GOLD_LEVELS = [40,50,60];
+function validateScenario(config,path){
+  const errors=[];
+  if(!Number.isFinite(config.start)||config.start<=0) errors.push('请输入大于 0 的起始资金。');
+  if(Math.abs(config.s+config.g+config.p+config.c-100)>1e-8) errors.push('配置合计须为 100%，才显示完整推演。');
+  let previous=0;
+  path.forEach((r,i)=>{if(!Number.isFinite(r.drop)||r.drop<0||r.drop>95) errors.push('观察点 '+(i+1)+'：跌幅须为 0–95%。');
+    else if(r.drop<previous) errors.push('观察点 '+(i+1)+'：跌幅须不小于前一观察点。');
+    if(!Number.isFinite(r.gold)||r.gold< -100||r.gold>1000) errors.push('观察点 '+(i+1)+'：黄金涨幅须为 −100% 至 1000%。');
+    previous=r.drop;});
+  return errors;
+}
+function simulate(config,path,maxDrop=95){
+  const cashInitial=Math.round(config.start*config.c), goldInitial=config.start*config.g/100, stockInitial=config.start*config.s/100;
+  let cashCents=cashInitial, goldBasis=goldInitial, cashCount=cashInitial===0?3:0, goldCount=goldInitial===0?3:0, addedRecovery=0, invested=0, goldProceeds=0, currentGold=0;
+  const rows=[];
+  for(let i=0;i<path.length;i++){
+    const r=path[i]; if(r.drop>maxDrop) break;
+    const price=1-r.drop/100; let spent=0,source='',reason='',basisSold=0;
+    currentGold=r.gold;
+    if(cashCount<3){
+      if(r.drop>=CASH_LEVELS[cashCount]){
+        const cents=cashCount===2?cashCents:Math.min(cashCents,Math.floor(cashInitial/3));
+        cashCents-=cents; cashCount++; spent=cents/100; source='现金第 '+cashCount+' 批';
+        if(!spent) reason='起始现金为 0，本批无投入';
+      } else reason='等待现金第 '+(cashCount+1)+' 批：跌幅 ≥'+CASH_LEVELS[cashCount]+'%';
+    } else if(goldCount<3){
+      const missing=[];
+      if(r.drop<GOLD_LEVELS[goldCount])missing.push('跌幅未达 '+GOLD_LEVELS[goldCount]+'%');
+      if(!r.qe)missing.push('Fed 未 QE');
+      if(r.gold<=0)missing.push('黄金未高于起始价');
+      if(missing.length)reason=missing.join('；');
+      else {
+        basisSold=goldCount===2?goldBasis:Math.min(goldBasis,goldInitial/3);
+        goldBasis=Math.max(0,goldBasis-basisSold); goldCount++;
+        spent=basisSold*(1+r.gold/100); goldProceeds+=spent; source='黄金第 '+goldCount+' 批';
+        if(!spent)reason='起始黄金为 0，本批无投入';
+      }
+    }else reason='三批现金与三批黄金均已完成，不再追加';
+    const recovery=spent/price; addedRecovery+=recovery; invested+=spent;
+    const cash=cashCents/100,property=config.start*config.p/100*(1+config.prop/100);
+    const final=stockInitial+addedRecovery+cash+goldBasis*(1+r.gold/100)+property;
+    rows.push({index:i,drop:r.drop,gold:r.gold,qe:r.qe,spent,source,reason,basisSold,recovery,stockProfit:recovery-spent,cash,goldBasis,cashCount,goldCount,addedRecovery,invested,goldProceeds,final,flatFinal:stockInitial+addedRecovery+cash+goldBasis+property});
   }
-  loadState(); calc();
+  const cash=cashCents/100,property=config.start*config.p/100*(1+config.prop/100),goldValue=goldBasis*(1+currentGold/100);
+  const final=stockInitial+addedRecovery+cash+goldValue+property;
+  return {rows,cash,goldBasis,cashCount,goldCount,addedRecovery,invested,goldProceeds,currentGold,stockInitial,goldInitial,property,goldValue,final,flatFinal:stockInitial+addedRecovery+cash+goldBasis+property,low:(stockInitial+addedRecovery)*(1-maxDrop/100)+cash+goldValue+property};
+}
+// MODEL_END
+const $=id=>document.getElementById(id);
+const rm=n=>'RM '+Math.round(n).toLocaleString('en-US');
+const money=n=>'RM '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
+const roi=(n,start)=>(n/start-1)*100;
+const allocs=[['s','美股 / ETF','stock',75],['g','黄金','gold',15],['p','房产','prop',0],['c','现金','cash',10]];
+const cagrs=[['scagr','美股 CAGR',10,40],['gcagr','黄金 CAGR',6,20],['pcagr','房产 CAGR',5,20],['ccagr','现金 CAGR',3,20]];
+$('allocControls').innerHTML=allocs.map(([id,label,color,value])=>'<div class="row"><label for="'+id+'Input"><span class="dot" style="background:var(--'+color+')"></span>'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="100" step="1" value="'+value+'" aria-label="'+label+'配置百分比"><span>%</span><span class="amount" id="'+id+'V"></span></span></div><input type="range" id="'+id+'" min="0" max="100" value="'+value+'" aria-label="'+label+'配置滑条">').join('');
+$('cagrControls').innerHTML=cagrs.map(([id,label,value,max])=>'<div><div class="row"><label for="'+id+'Input">'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'百分比"><span>%</span></span></div><input type="range" id="'+id+'" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'滑条"></div>').join('');
+$('ledgerBody').innerHTML=DEFAULT_PATH.map((r,i)=>'<tr id="stage'+i+'"><td>第 '+(i+1)+' 次</td><td><span class="entry">−<input type="number" id="drop'+i+'" min="0" max="95" step="0.1" value="'+r.drop+'" aria-label="观察点'+(i+1)+'股市跌幅">%</span></td><td><span class="entry"><input type="number" id="gold'+i+'" min="-100" max="1000" step="0.1" value="'+r.gold+'" aria-label="观察点'+(i+1)+'黄金涨幅">%</span></td><td><input type="checkbox" id="qe'+i+'" '+(r.qe?'checked':'')+' aria-label="观察点'+(i+1)+'已启动QE"></td><td class="action" id="action'+i+'"></td><td id="spend'+i+'"></td><td id="price'+i+'"></td><td id="recovery'+i+'"></td><td id="gain'+i+'"></td></tr>').join('');
+const ids=['start','crash','prop','s','g','p','c','scagr','gcagr','pcagr','ccagr','recoveryGold',...DEFAULT_PATH.flatMap((r,i)=>['drop'+i,'gold'+i,'qe'+i])];
+const STORE='portfolio_staged_v2';
+function saveState(){try{const o={};ids.forEach(id=>o[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
+function loadState(){try{const o=JSON.parse(localStorage.getItem(STORE)||'null');if(!o)return;ids.forEach(id=>{if(o[id]!=null){if($(id).type==='checkbox')$(id).checked=o[id]===true;else $(id).value=o[id];}});}catch(e){}}
+function getConfig(){return {start:$('start').valueAsNumber,s:+$('s').value,g:+$('g').value,p:+$('p').value,c:+$('c').value,prop:+$('prop').value};}
+function getPath(){return DEFAULT_PATH.map((r,i)=>({drop:$('drop'+i).valueAsNumber,gold:$('gold'+i).valueAsNumber,qe:$('qe'+i).checked}));}
+function sync(){['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{if(document.activeElement!==$(id+'Input'))$(id+'Input').value=$(id).value;});}
+['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{const slider=$(id),input=$(id+'Input');input.addEventListener('input',()=>{if(input.value===''||!Number.isFinite(input.valueAsNumber))return;slider.value=input.value;input.value=slider.value;calc();});input.addEventListener('blur',()=>input.value=slider.value);input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();});});
+ids.forEach(id=>$(id).addEventListener('input',calc));
+function preset(){try{localStorage.removeItem(STORE);}catch(e){} location.reload();}
+$('coursePreset').addEventListener('click',preset);$('reset').addEventListener('click',preset);
+$('noQE').addEventListener('click',()=>{DEFAULT_PATH.forEach((r,i)=>$('qe'+i).checked=false);calc();});
+function calc(){
+  sync(); const config=getConfig(),path=getPath(),depth=-$('crash').value;
+  const total=config.s+config.g+config.p+config.c;
+  $('sum').textContent='合计：'+total+'%'+(total===100?'　✓':'　（请调到 100%）');$('sum').className='sum '+(total===100?'ok':'bad');
+  allocs.forEach(([id])=>$(id+'V').textContent=rm((Number.isFinite(config.start)?config.start:0)*config[id]/100));
+  const blended=(config.s*$('scagr').value+config.g*$('gcagr').value+config.p*$('pcagr').value+config.c*$('ccagr').value)/100;
+  $('cagrOut').textContent='按当前假设加权的组合年化回报约 '+blended.toFixed(1)+'%。'+(total!==100?' 配置合计须先调整到 100%。':' 这是长期假设，与上面的累计 ROI 分开计算。');
+  const errors=validateScenario(config,path);
+  $('validation').hidden=!errors.length;$('validation').textContent=errors.join(' ');$('outputs').hidden=!!errors.length;
+  if(errors.length){DEFAULT_PATH.forEach((r,i)=>{['action','spend','price','recovery','gain'].forEach(prefix=>$(prefix+i).textContent='—');});$('goldAssumption').textContent='请先修正输入，完整推演会自动恢复。';saveState();return;}
+  const full=simulate(config,path),selected=simulate(config,path,depth);
+  full.rows.forEach((r,i)=>{
+    const reached=r.drop<=depth;
+    $('stage'+i).className=reached?'':'future';
+    $('action'+i).textContent='';const status=document.createElement('span');status.className='status '+(!reached?'pending':r.spent>0?'':'wait');status.textContent=!reached?'尚未到达':r.spent>0?'已执行':'未投入';$('action'+i).append(status,document.createElement('br'),document.createTextNode(r.source||'等待 / 不追加'));
+    if(r.reason){const small=document.createElement('small');small.textContent=r.reason;$('action'+i).append(small);}
+    $('spend'+i).textContent=money(r.spent);$('price'+i).textContent=(100-r.drop).toFixed(2);
+    $('recovery'+i).textContent=money(r.recovery);$('gain'+i).textContent=money(r.stockProfit);
+    $('recovery'+i).className=!reached?'':'pos';
+  });
+  const recoveryFlat=$('recoveryGold').value==='flat',final=recoveryFlat?selected.flatFinal:selected.final,profit=final-config.start;
+  const used=selected.rows.filter(r=>r.spent>0).length,latest=selected.rows.at(-1);
+  $('goldAssumption').textContent='所选低点未卖黄金涨幅：'+pct(selected.currentGold)+'（'+(latest?'沿用第 '+(latest.index+1)+' 次观察':'尚未到首个观察点，按 0%')+'）；恢复时按'+(recoveryFlat?'起始价。':'该涨幅。');
+  $('scenarioTitle').textContent='④ 本次情境：最低跌 '+depth+'%，再回到原前高';
+  $('summary').textContent='已投入 '+used+' 批，共 '+money(selected.invested)+'（起始现金投入 '+money(config.start*config.c/100-selected.cash)+' ＋ 卖金所得 '+money(selected.goldProceeds)+'）。现金批次 '+selected.cashCount+'/3，黄金批次 '+selected.goldCount+'/3；剩余黄金数量 '+(selected.goldInitial?selected.goldBasis/selected.goldInitial*100:0).toFixed(1)+'%。';
+  $('allinFinal').textContent=rm(config.start);$('allinROI').textContent='累计盈亏 RM 0 · ROI 0.00%';
+  $('portfolioFinal').textContent=rm(final);$('portfolioROI').textContent='累计盈亏 '+money(profit)+' · ROI '+pct(roi(final,config.start));$('portfolioROI').className=profit>=0?'pos':'neg';
+  const totalStockProfit=selected.addedRecovery-selected.invested;
+  const realizedGoldProfit=selected.goldProceeds-(selected.goldInitial-selected.goldBasis);
+  const remainingGoldProfit=recoveryFlat?0:selected.goldValue-selected.goldBasis;
+  $('profitComponents').textContent='新增股票盈亏 '+money(totalStockProfit)+'；黄金已实现价差 '+money(realizedGoldProfit)+'；未卖黄金盈亏 '+money(remainingGoldProfit)+'。';
+  $('baseStock').textContent=rm(selected.stockInitial);$('addedStock').textContent=rm(selected.addedRecovery);$('cashLeft').textContent=money(selected.cash);$('goldLeft').textContent=rm(recoveryFlat?selected.goldBasis:selected.goldValue);
+  $('propertyResult').textContent=config.p?'另含房产终值 '+money(selected.property)+'（房产盈亏 '+money(selected.property-config.start*config.p/100)+'）。':'课件示例未配置房产。';
+  $('flatResult').textContent='若未卖黄金回到起始价：组合 '+rm(selected.flatFinal)+'，ROI '+pct(roi(selected.flatFinal,config.start))+'。';
+  $('allinLow').textContent=rm(config.start*(1-depth/100));$('portfolioLow').textContent=rm(selected.low);$('lowROI').textContent='相对起始 '+pct(roi(selected.low,config.start));$('lowROI').className=selected.low>=config.start?'pos':'neg';
+  $('comparisonBody').innerHTML=full.rows.map(r=>'<tr class="'+(latest?.index===r.index?'selected':'')+'"><td>−'+r.drop+'%<small>观察点 '+(r.index+1)+'</small></td><td>'+money(config.start*config.c/100-r.cash)+'</td><td>'+(config.g?(100-r.goldBasis/selected.goldInitial*100).toFixed(1)+'%':'无黄金')+'</td><td>'+pct(r.gold)+'</td><td>'+rm(r.final)+'</td><td>'+money(r.final-config.start)+'</td><td>'+pct(roi(r.final,config.start))+'</td><td>'+pct(roi(r.flatFinal,config.start))+'</td></tr>').join('');
+  saveState();
+}
+loadState();calc();
 </script>
 </body>
 </html>

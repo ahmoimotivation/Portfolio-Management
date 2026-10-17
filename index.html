@@ -19,10 +19,8 @@
 <section class="card">
 <h2>① 市场情景</h2>
 <div class="row"><label for="start">起始资金（RM）</label><input id="start" type="number" min="0" max="1000000000000" step="10000" value="100000"></div>
-<div class="row"><label for="crashInput">S&amp;P 500 最低跌幅</label><span class="entry"><input type="number" id="crashInput" min="-95" max="0" step="1" value="-60" aria-label="最低跌幅百分比"><span>%</span></span></div>
-<input type="range" id="crash" min="-95" max="0" value="-60" aria-label="最低跌幅滑条">
-<p class="note">以危机前高价＝100 推演。只有到达所选最低跌幅前的课件档位，才计入本次加仓；各档跌幅、黄金涨幅和 QE 状态固定采用课件预设。</p>
-<div class="row"><label for="recoveryGold">回到前高时，未卖出的黄金</label><select id="recoveryGold"><option value="hold">维持所选低点的黄金涨幅</option><option value="flat">回到起始价（0%）</option></select></div>
+<div class="row"><span>S&amp;P 500 最低跌幅</span><strong class="chip">−60% · 固定假设</strong></div>
+<p class="note">固定情境：S&amp;P 500 从危机前高下跌 60%，再恢复到同一个前高。以危机前高价＝100 推演，最低价格＝40；现金与黄金依课件预设分批投入。</p>
 <p class="note" id="goldAssumption"></p>
 </section>
 <section class="card alloc">
@@ -42,7 +40,7 @@
 <p class="note">黄金涨幅依次预设为 0%、0%、+2%、+15%、+25%、+40%，以危机起点为基准；不是逐行复利涨幅。跌 60% 后本预设已用完黄金，70% 与 80% 不再追加。每档视作不同观察时点，快速跳跌不代表同日补完多批。</p>
 <div id="validation" class="error" role="alert" hidden></div>
 <div class="table-wrap" tabindex="0" role="region" aria-label="分批投入明细，可左右滚动"><table id="ledger"><caption>课件预设与逐批投入明细（价格代理：前高＝100）</caption><thead><tr><th>观察点</th><th>股市跌幅</th><th>黄金涨幅</th><th>QE 状态</th><th>本轮动作 / 条件</th><th>本轮补股</th><th>成交价格</th><th>此批回前高值</th><th>此批股票盈亏</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
-<p class="mini">浅色行超出当前最低跌幅，仅用于比较更深跌幅的情境。每档只执行一次；未卖出的黄金继续持有。第三批黄金卖出余下全部数量。</p>
+<p class="mini">本次固定推演至跌 60%；浅色的 70% 与 80% 行仅作延伸比较，不计入本次情境。每档只执行一次，第三批黄金卖出余下全部数量。</p>
 </section>
 <div id="outputs">
 <section class="card">
@@ -126,19 +124,20 @@ const cagrs=[['scagr','美股 CAGR',10,40],['gcagr','黄金 CAGR',6,20],['pcagr'
 $('allocControls').innerHTML=allocs.map(([id,label,color,value])=>'<div class="row"><label for="'+id+'Input"><span class="dot" style="background:var(--'+color+')"></span>'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="100" step="1" value="'+value+'" aria-label="'+label+'配置百分比"><span>%</span><span class="amount" id="'+id+'V"></span></span></div><input type="range" id="'+id+'" min="0" max="100" value="'+value+'" aria-label="'+label+'配置滑条">').join('');
 $('cagrControls').innerHTML=cagrs.map(([id,label,value,max])=>'<div><div class="row"><label for="'+id+'Input">'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'百分比"><span>%</span></span></div><input type="range" id="'+id+'" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'滑条"></div>').join('');
 $('ledgerBody').innerHTML=DEFAULT_PATH.map((r,i)=>'<tr id="stage'+i+'"><td>第 '+(i+1)+' 次</td><td>−'+r.drop+'%</td><td>'+(i<6?(r.gold>0?'+':'')+r.gold+'%':'—')+'</td><td>'+(i<3?'尚未 QE':i<6?'已 QE':'—')+'</td><td class="action" id="action'+i+'"></td><td id="spend'+i+'"></td><td id="price'+i+'"></td><td id="recovery'+i+'"></td><td id="gain'+i+'"></td></tr>').join('');
-const ids=['start','crash','prop','s','g','p','c','scagr','gcagr','pcagr','ccagr','recoveryGold'];
+const ids=['start','prop','s','g','p','c','scagr','gcagr','pcagr','ccagr'];
+const FIXED_DRAWDOWN=60;
 const STORE='portfolio_staged_v2';
 function saveState(){try{const o={};ids.forEach(id=>o[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
 function loadState(){try{const o=JSON.parse(localStorage.getItem(STORE)||'null');if(!o)return;ids.forEach(id=>{if(o[id]!=null){if($(id).type==='checkbox')$(id).checked=o[id]===true;else $(id).value=o[id];}});}catch(e){}}
 function getConfig(){return {start:$('start').valueAsNumber,s:+$('s').value,g:+$('g').value,p:+$('p').value,c:+$('c').value,prop:+$('prop').value};}
 function getPath(){return DEFAULT_PATH.map(r=>({...r}));}
-function sync(){['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{if(document.activeElement!==$(id+'Input'))$(id+'Input').value=$(id).value;});}
-['s','g','p','c','crash','prop',...cagrs.map(r=>r[0])].forEach(id=>{const slider=$(id),input=$(id+'Input');input.addEventListener('input',()=>{if(input.value===''||!Number.isFinite(input.valueAsNumber))return;slider.value=input.value;input.value=slider.value;calc();});input.addEventListener('blur',()=>input.value=slider.value);input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();});});
+function sync(){['s','g','p','c','prop',...cagrs.map(r=>r[0])].forEach(id=>{if(document.activeElement!==$(id+'Input'))$(id+'Input').value=$(id).value;});}
+['s','g','p','c','prop',...cagrs.map(r=>r[0])].forEach(id=>{const slider=$(id),input=$(id+'Input');input.addEventListener('input',()=>{if(input.value===''||!Number.isFinite(input.valueAsNumber))return;slider.value=input.value;input.value=slider.value;calc();});input.addEventListener('blur',()=>input.value=slider.value);input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();});});
 ids.forEach(id=>$(id).addEventListener('input',calc));
 function preset(){try{localStorage.removeItem(STORE);}catch(e){} location.reload();}
 $('coursePreset').addEventListener('click',preset);$('reset').addEventListener('click',preset);
 function calc(){
-  sync(); const config=getConfig(),path=getPath(),depth=-$('crash').value;
+  sync(); const config=getConfig(),path=getPath(),depth=FIXED_DRAWDOWN;
   const total=config.s+config.g+config.p+config.c;
   $('sum').textContent='合计：'+total+'%'+(total===100?'　✓':'　（请调到 100%）');$('sum').className='sum '+(total===100?'ok':'bad');
   allocs.forEach(([id])=>$(id+'V').textContent=rm((Number.isFinite(config.start)?config.start:0)*config[id]/100));
@@ -157,9 +156,9 @@ function calc(){
     $('recovery'+i).textContent=money(r.recovery);$('gain'+i).textContent=money(r.stockProfit);
     $('recovery'+i).className=!reached?'':'pos';
   });
-  const recoveryFlat=$('recoveryGold').value==='flat',final=recoveryFlat?selected.flatFinal:selected.final,profit=final-config.start;
+  const recoveryFlat=false,final=selected.final,profit=final-config.start;
   const used=selected.rows.filter(r=>r.spent>0).length,latest=selected.rows.at(-1);
-  $('goldAssumption').textContent='所选低点未卖黄金涨幅：'+pct(selected.currentGold)+'（'+(latest?'沿用第 '+(latest.index+1)+' 次观察':'尚未到首个观察点，按 0%')+'）；恢复时按'+(recoveryFlat?'起始价。':'该涨幅。');
+  $('goldAssumption').textContent='课件预设：黄金在股市跌 40%、50%、60% 时，按金价相对起点上涨 15%、25%、40% 分三批卖出补股；到跌 60% 时黄金已用完。';
   $('scenarioTitle').textContent='④ 本次情境：最低跌 '+depth+'%，再回到原前高';
   $('summary').textContent='已投入 '+used+' 批，共 '+money(selected.invested)+'（起始现金投入 '+money(config.start*config.c/100-selected.cash)+' ＋ 卖金所得 '+money(selected.goldProceeds)+'）。现金批次 '+selected.cashCount+'/3，黄金批次 '+selected.goldCount+'/3；剩余黄金数量 '+(selected.goldInitial?selected.goldBasis/selected.goldInitial*100:0).toFixed(1)+'%。';
   $('allinFinal').textContent=rm(config.start);$('allinROI').textContent='累计盈亏 RM 0 · ROI 0.00%';

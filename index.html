@@ -33,7 +33,7 @@
 <p class="note">课件示例不含房产。若加入房产，假设其变化维持至终点；本模拟不计租金。</p>
 </section>
 </div>
-<section class="card"><details><summary>③ 平时（非崩盘）各资产年化回报 CAGR</summary><p class="note">以下仅是另外的长期回报假设，不计入下方的危机周期 ROI，也不用于推断恢复时间。</p><div class="grid" id="cagrControls"></div><div class="callout" id="cagrOut"></div></details></section>
+<section class="card"><h2>③ 平时（非崩盘）各资产年化回报 ROI</h2><p class="note">以下仅是另外的长期回报假设，不计入下方的危机周期 ROI，也不用于推断恢复时间。</p><div class="grid" id="cagrControls"></div><div class="callout" id="cagrOut"></div></section>
 <section class="card">
 <h2>④ 课件预设 · 分批投入明细</h2>
 <div class="rules"><div class="rule"><b>现金三批：跌 10% → 20% → 30%</b><p>每批约起始现金的 1/3，第三批投入余下全部现金。不是每次取剩余现金的 1/3。</p></div><div class="rule"><b>黄金三批：跌 40% → 50% → 60%</b><p>每批约原有黄金数量的 1/3。须现金批次已完成、Fed 已 QE、金价高于起点；条件不足则等待。</p></div></div>
@@ -120,7 +120,7 @@ const money=n=>'RM '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFr
 const pct=n=>(n>=0?'+':'')+n.toFixed(2)+'%';
 const roi=(n,start)=>(n/start-1)*100;
 const allocs=[['s','美股 / ETF','stock',75],['g','黄金','gold',15],['p','房产','prop',0],['c','现金','cash',10]];
-const cagrs=[['scagr','美股 CAGR',10,40],['gcagr','黄金 CAGR',6,20],['pcagr','房产 CAGR',5,20],['ccagr','现金 CAGR',3,20]];
+const cagrs=[['scagr','美股 ROI',10,40],['gcagr','黄金 ROI',6,20],['pcagr','房产 ROI',5,20],['ccagr','现金 ROI',3,20]];
 $('allocControls').innerHTML=allocs.map(([id,label,color,value])=>'<div class="row"><label for="'+id+'Input"><span class="dot" style="background:var(--'+color+')"></span>'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="100" step="1" value="'+value+'" aria-label="'+label+'配置百分比"><span>%</span><span class="amount" id="'+id+'V"></span></span></div><input type="range" id="'+id+'" min="0" max="100" value="'+value+'" aria-label="'+label+'配置滑条">').join('');
 $('cagrControls').innerHTML=cagrs.map(([id,label,value,max])=>'<div><div class="row"><label for="'+id+'Input">'+label+'</label><span class="entry"><input type="number" id="'+id+'Input" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'百分比"><span>%</span></span></div><input type="range" id="'+id+'" min="0" max="'+max+'" step="0.5" value="'+value+'" aria-label="'+label+'滑条"></div>').join('');
 $('ledgerBody').innerHTML=DEFAULT_PATH.map((r,i)=>'<tr id="stage'+i+'"><td>第 '+(i+1)+' 次</td><td>−'+r.drop+'%</td><td>'+(i<6?(r.gold>0?'+':'')+r.gold+'%':'—')+'</td><td>'+(i<3?'尚未 QE':i<6?'已 QE':'—')+'</td><td class="action" id="action'+i+'"></td><td id="spend'+i+'"></td><td id="price'+i+'"></td><td id="recovery'+i+'"></td><td id="gain'+i+'"></td></tr>').join('');

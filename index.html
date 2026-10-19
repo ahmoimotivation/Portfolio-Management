@@ -33,8 +33,9 @@
 <p class="note">课件示例不含房产。若加入房产，假设其变化维持至终点；本模拟不计租金。</p>
 </section>
 </div>
+<section class="card"><details><summary>③ 平时（非崩盘）各资产年化回报 CAGR</summary><p class="note">以下仅是另外的长期回报假设，不计入下方的危机周期 ROI，也不用于推断恢复时间。</p><div class="grid" id="cagrControls"></div><div class="callout" id="cagrOut"></div></details></section>
 <section class="card">
-<h2>③ 课件预设 · 分批投入明细</h2>
+<h2>④ 课件预设 · 分批投入明细</h2>
 <div class="rules"><div class="rule"><b>现金三批：跌 10% → 20% → 30%</b><p>每批约起始现金的 1/3，第三批投入余下全部现金。不是每次取剩余现金的 1/3。</p></div><div class="rule"><b>黄金三批：跌 40% → 50% → 60%</b><p>每批约原有黄金数量的 1/3。须现金批次已完成、Fed 已 QE、金价高于起点；条件不足则等待。</p></div></div>
 <div class="callout">以下固定跟随课件：现金在跌 10%、20%、30% 时分三批投入；黄金在跌 40%、50%、60% 时，按已 QE 与金价上涨的预设分三批转换成股票。学生无需填写这张表，投入金额会随起始资金与资产配置自动重算。</div>
 <p class="note">黄金涨幅依次预设为 0%、0%、+2%、+15%、+25%、+40%，以危机起点为基准；不是逐行复利涨幅。跌 60% 后本预设已用完黄金，70% 与 80% 不再追加。每档视作不同观察时点，快速跳跌不代表同日补完多批。</p>
@@ -44,7 +45,7 @@
 </section>
 <div id="outputs">
 <section class="card">
-<h2 id="scenarioTitle">④ 本次情境：回到原前高后</h2>
+<h2 id="scenarioTitle">⑤ 本次情境：回到原前高后</h2>
 <div class="callout" id="summary"></div>
 <div class="results"><div class="res"><div class="tag">100% 股票 · 持有至恢复前高</div><div class="big" id="allinFinal"></div><p id="allinROI"></p><p class="note">价格回到起点，不计股息与费用。</p></div><div class="res highlight"><div class="tag">按规则分批加仓 · 恢复前高时组合</div><div class="big" id="portfolioFinal"></div><p id="portfolioROI"></p><p id="profitComponents"></p></div></div>
 <div class="breakdown"><div>原有股票恢复值<b id="baseStock"></b></div><div>新增股票恢复值<b id="addedStock"></b></div><div>剩余现金<b id="cashLeft"></b></div><div>未卖黄金恢复值<b id="goldLeft"></b></div></div>
@@ -53,13 +54,12 @@
 <details><summary>查看计算口径</summary><p class="note">每批新增股票恢复值＝本批投入 ÷（1 − 成交跌幅）。组合终值＝原有股票起始金额＋各批新增股票恢复值＋剩余现金＋未卖黄金恢复值＋房产终值。整体 ROI＝（组合终值 − 起始资金）÷ 起始资金。此批股票盈亏＝此批恢复值 − 本批投入。</p><p class="note">黄金出售金额＝本批原有数量 × 当时净卖出价；界面以该数量的起始价值 ×（1＋金价涨幅）计算。整体盈亏同时包含已卖黄金的价差与新增股票盈亏，避免把卖金款项当成外部新增资金。</p></details>
 </section>
 <section class="card">
-<h2>⑤ 不同最低跌幅：恢复前高后的整体 ROI</h2>
+<h2>⑥ 不同最低跌幅：恢复前高后的整体 ROI</h2>
 <p class="note">每行是「走到这个观察点后开始恢复」的独立情境，使用相同起始资金和前面已执行批次。黄金保价列沿用该行涨幅；右栏改用未卖黄金回到起始价。</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="恢复前高收益对照，可左右滚动"><table><caption>分批投入后的组合结果 · 累计回报，非年化</caption><thead><tr><th>最低跌幅</th><th>累计现金投入</th><th>黄金已卖出</th><th>黄金保价假设</th><th>恢复时组合值</th><th>整体盈亏</th><th>整体 ROI</th><th>黄金回原价 ROI</th></tr></thead><tbody id="comparisonBody"></tbody></table></div>
 <p class="note">若课件路径的黄金在跌 60% 时已用完，再跌到 70% 或 80% 也没有额外资金补股；恢复同一个前高时，累计投入所得股票的终值相同。</p>
 </section>
 </div>
-<section class="card"><details><summary>平时（非崩盘）各资产年化回报 CAGR</summary><p class="note">以下仅是另外的长期回报假设，不计入上面的危机周期 ROI，也不用于推断恢复时间。</p><div class="grid" id="cagrControls"></div><div class="callout" id="cagrOut"></div></details></section>
 <footer class="fine"><span class="chip">教育用途</span> <span class="chip">假设路径</span> <span class="chip">非收益承诺</span><p>本工具根据课程规则作一般投资教育演示，不构成个别投资建议、证券推荐或实际交易指令。资产配置、加仓档位、黄金涨幅与 QE 时点都是教学假设；不代表适合每位投资者，也不保证盈利或恢复前高。</p><p>S&amp;P 500 仅作股票回报代理，不代表个股实际收益；个股可能永久亏损。黄金可能与股票同跌，QE 不保证金价上涨。未计股息、现金利息、租金、税费、交易费用、黄金买卖价差及汇率；RM 为同一币种的记账示意。实际执行须用净卖出价并考虑变现限制。ROI 为整个假设周期累计值，非年化回报。</p><p>规则及对照：<a href="https://docs.google.com/presentation/d/13FmLvl8t2JVucogBU-yk6tZ_FZXmggNlQ0ibTmmiZ_8/edit#slide=id.p20" target="_blank" rel="noopener">课程第 23 页与相邻分批规则页</a>。投资有风险，可按需要咨询持牌专业人士。</p></footer>
 </main>
 <script>
@@ -142,7 +142,7 @@ function calc(){
   $('sum').textContent='合计：'+total+'%'+(total===100?'　✓':'　（请调到 100%）');$('sum').className='sum '+(total===100?'ok':'bad');
   allocs.forEach(([id])=>$(id+'V').textContent=rm((Number.isFinite(config.start)?config.start:0)*config[id]/100));
   const blended=(config.s*$('scagr').value+config.g*$('gcagr').value+config.p*$('pcagr').value+config.c*$('ccagr').value)/100;
-  $('cagrOut').textContent='按当前假设加权的组合年化回报约 '+blended.toFixed(1)+'%。'+(total!==100?' 配置合计须先调整到 100%。':' 这是长期假设，与上面的累计 ROI 分开计算。');
+  $('cagrOut').textContent='按当前假设加权的组合年化回报约 '+blended.toFixed(1)+'%。'+(total!==100?' 配置合计须先调整到 100%。':' 这是长期假设，与下方的累计 ROI 分开计算。');
   const errors=validateScenario(config,path);
   $('validation').hidden=!errors.length;$('validation').textContent=errors.join(' ');$('outputs').hidden=!!errors.length;
   if(errors.length){DEFAULT_PATH.forEach((r,i)=>{['action','spend','price','recovery','gain'].forEach(prefix=>$(prefix+i).textContent='—');});$('goldAssumption').textContent='请先修正输入，完整推演会自动恢复。';saveState();return;}
@@ -159,7 +159,7 @@ function calc(){
   const recoveryFlat=false,final=selected.final,profit=final-config.start;
   const used=selected.rows.filter(r=>r.spent>0).length,latest=selected.rows.at(-1);
   $('goldAssumption').textContent='课件预设：黄金在股市跌 40%、50%、60% 时，按金价相对起点上涨 15%、25%、40% 分三批卖出补股；到跌 60% 时黄金已用完。';
-  $('scenarioTitle').textContent='④ 本次情境：最低跌 '+depth+'%，再回到原前高';
+  $('scenarioTitle').textContent='⑤ 本次情境：最低跌 '+depth+'%，再回到原前高';
   $('summary').textContent='已投入 '+used+' 批，共 '+money(selected.invested)+'（起始现金投入 '+money(config.start*config.c/100-selected.cash)+' ＋ 卖金所得 '+money(selected.goldProceeds)+'）。现金批次 '+selected.cashCount+'/3，黄金批次 '+selected.goldCount+'/3；剩余黄金数量 '+(selected.goldInitial?selected.goldBasis/selected.goldInitial*100:0).toFixed(1)+'%。';
   $('allinFinal').textContent=rm(config.start);$('allinROI').textContent='累计盈亏 RM 0 · ROI 0.00%';
   $('portfolioFinal').textContent=rm(final);$('portfolioROI').textContent='累计盈亏 '+money(profit)+' · ROI '+pct(roi(final,config.start));$('portfolioROI').className=profit>=0?'pos':'neg';
